@@ -9,7 +9,7 @@
 <br/>
 
 <a href="https://github.com/hotuyen21pt?tab=repositories"><img src="https://img.shields.io/badge/Repositories-24-36BCF7?style=for-the-badge&logo=github&logoColor=white" alt="repos" /></a>
-<a href="mailto:hotuyenpt@gmail.com"><img src="https://img.shields.io/badge/Email-hotuyenpt%40gmail.com-D14836?style=for-the-badge&logo=gmail&logoColor=white" alt="email" /></a>
+<a href="mailto:tuyennh2102@gmail.com"><img src="https://img.shields.io/badge/Email-tuyennh2102%40gmail.com-D14836?style=for-the-badge&logo=gmail&logoColor=white" alt="email" /></a>
 <img src="https://komarev.com/ghpvc/?username=hotuyen21pt&style=for-the-badge&color=36BCF7&label=PROFILE+VIEWS" alt="views" />
 
 </div>
