@@ -1,10 +1,6 @@
 <div align="center">
 
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0:0F2027,50:203A43,100:2C5364&height=200&section=header&text=Tuyen%20Ho%20Nguyen&fontSize=52&fontColor=FFFFFF&fontAlignY=36&desc=NLP%20Research%20·%20Multimodal%20AI%20·%20Full-stack%20ML%20Engineering&descAlignY=58&descSize=16&animation=fadeIn" alt="header" />
-
-<a href="https://github.com/hotuyen21pt">
-  <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=22&duration=3200&pause=800&color=36BCF7&center=true&vCenter=true&width=720&lines=Aspect-Based+Sentiment+Analysis+%7C+ASQP;Medical+VQA+on+Chest+X-rays+%7C+MedGemma+%2B+LoRA;LLM+fine-tuning%2C+distillation+and+evaluation;From+the+paper+to+a+Docker+image+that+serves+it" alt="typing" />
-</a>
+<img src="assets/banner.svg" width="100%" alt="Tuyen Ho Nguyen — NLP Research · Multimodal AI · ML Engineering" />
 
 <br/>
 
@@ -12,9 +8,9 @@
 <a href="mailto:tuyennh2102@gmail.com"><img src="https://img.shields.io/badge/Email-tuyennh2102%40gmail.com-D14836?style=for-the-badge&logo=gmail&logoColor=white" alt="email" /></a>
 <img src="https://komarev.com/ghpvc/?username=hotuyen21pt&style=for-the-badge&color=36BCF7&label=PROFILE+VIEWS" alt="views" />
 
-</div>
+<img src="assets/divider.svg" width="100%" alt="" />
 
----
+</div>
 
 ## 👋 About me
 
@@ -37,7 +33,7 @@ class TuyenHoNguyen:
   and a test suite. Research code that runs on a stranger's machine.
 - 🧭 **Vietnamese-first NLP** — ABSA, OCR and clause segmentation tuned for Vietnamese text.
 
----
+<div align="center"><img src="assets/divider.svg" width="100%" alt="" /></div>
 
 ## 🧰 Tech Stack
 
@@ -81,7 +77,7 @@ class TuyenHoNguyen:
 ![SQLite](https://img.shields.io/badge/SQLite-003B57?style=flat-square&logo=sqlite&logoColor=white)
 ![pytest](https://img.shields.io/badge/pytest-0A9EDC?style=flat-square&logo=pytest&logoColor=white)
 
----
+<div align="center"><img src="assets/divider.svg" width="100%" alt="" /></div>
 
 ## 🚀 Featured Work
 
@@ -224,26 +220,33 @@ matches. FastAPI endpoint, drag-and-drop web UI, Dockerised, with
 
 </details>
 
----
+<div align="center"><img src="assets/divider.svg" width="100%" alt="" /></div>
 
 ## 📊 GitHub Stats
 
 <div align="center">
 
-<img height="165" src="https://github-readme-stats.vercel.app/api?username=hotuyen21pt&show_icons=true&include_all_commits=true&count_private=true&theme=tokyonight&hide_border=true&bg_color=0D1117&title_color=36BCF7&icon_color=36BCF7" alt="stats" />
-<img height="165" src="https://github-readme-stats.vercel.app/api/top-langs/?username=hotuyen21pt&layout=compact&langs_count=8&theme=tokyonight&hide_border=true&bg_color=0D1117&title_color=36BCF7" alt="top langs" />
+<img src="assets/stats.svg" alt="overview" />
+<img src="assets/top-langs.svg" alt="most used languages" />
 
 <br/>
 
-<img src="https://streak-stats.demolab.com?user=hotuyen21pt&theme=tokyonight&hide_border=true&background=0D1117&ring=36BCF7&fire=36BCF7&currStreakLabel=36BCF7" alt="streak" />
+<img src="https://streak-stats.demolab.com?user=hotuyen21pt&theme=tokyonight&hide_border=true&border_radius=12&background=0D1117&ring=36BCF7&fire=7C4DFF&currStreakLabel=36BCF7" alt="streak" />
 
 <br/><br/>
 
-<img src="https://github-profile-trophy.vercel.app/?username=hotuyen21pt&theme=tokyonight&no-frame=true&no-bg=true&margin-w=8&row=1&column=6" alt="trophies" />
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/hotuyen21pt/hotuyen21pt/output/github-snake-dark.svg" />
+  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/hotuyen21pt/hotuyen21pt/output/github-snake-light.svg" />
+  <img src="https://raw.githubusercontent.com/hotuyen21pt/hotuyen21pt/output/github-snake-dark.svg" alt="contribution snake" width="100%" />
+</picture>
+
+<sub>The two cards above are rendered by <a href="scripts/gen_stats.py"><code>scripts/gen_stats.py</code></a> and committed to this repo —
+no third-party service to go down.</sub>
 
 </div>
 
----
+<div align="center"><img src="assets/divider.svg" width="100%" alt="" /></div>
 
 ## 🧪 Research Interests
 
@@ -258,12 +261,10 @@ matches. FastAPI endpoint, drag-and-drop web UI, Dockerised, with
 
 </div>
 
----
-
 <div align="center">
 
-> *"Faithfulness to the paper matters more than peak F1 — until you can prove otherwise."*
+<img src="assets/divider.svg" width="100%" alt="" />
 
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0:2C5364,50:203A43,100:0F2027&height=120&section=footer" alt="footer" />
+> *"Faithfulness to the paper matters more than peak F1 — until you can prove otherwise."*
 
 </div>

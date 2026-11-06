@@ -1,0 +1,134 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="280" viewBox="0 0 900 280" role="img" aria-label="Tuyen Ho Nguyen — NLP Research, Multimodal AI, Full-stack ML Engineering">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%"   stop-color="#070B14"/>
+      <stop offset="50%"  stop-color="#0E2234"/>
+      <stop offset="100%" stop-color="#070B14"/>
+    </linearGradient>
+
+    <!-- Slow sheen that travels across the name. -->
+    <linearGradient id="sheen" x1="0" y1="0" x2="1" y2="0" gradientUnits="objectBoundingBox">
+      <stop offset="0%"   stop-color="#9FE8FF"/>
+      <stop offset="45%"  stop-color="#36BCF7"/>
+      <stop offset="55%"  stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#36BCF7"/>
+      <animate attributeName="x1" values="-1;0;-1" dur="7s" repeatCount="indefinite"/>
+      <animate attributeName="x2" values="0;1;0"   dur="7s" repeatCount="indefinite"/>
+    </linearGradient>
+
+    <linearGradient id="rule" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%"   stop-color="#36BCF7" stop-opacity="0"/>
+      <stop offset="50%"  stop-color="#36BCF7" stop-opacity="1"/>
+      <stop offset="100%" stop-color="#7C4DFF" stop-opacity="0"/>
+    </linearGradient>
+
+    <radialGradient id="glowA">
+      <stop offset="0%"   stop-color="#36BCF7" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#36BCF7" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glowB">
+      <stop offset="0%"   stop-color="#7C4DFF" stop-opacity="0.45"/>
+      <stop offset="100%" stop-color="#7C4DFF" stop-opacity="0"/>
+    </radialGradient>
+
+    <pattern id="grid" width="36" height="36" patternUnits="userSpaceOnUse">
+      <path d="M36 0H0V36" fill="none" stroke="#36BCF7" stroke-opacity="0.07" stroke-width="1"/>
+    </pattern>
+
+    <clipPath id="card"><rect width="900" height="280" rx="16"/></clipPath>
+
+    <!-- One clip per typed line; the width is what animates. -->
+    <clipPath id="c1"><rect class="r1" x="78" y="196" width="0" height="26"/></clipPath>
+    <clipPath id="c2"><rect class="r2" x="78" y="196" width="0" height="26"/></clipPath>
+    <clipPath id="c3"><rect class="r3" x="78" y="196" width="0" height="26"/></clipPath>
+    <clipPath id="c4"><rect class="r4" x="78" y="196" width="0" height="26"/></clipPath>
+  </defs>
+
+  <style>
+    .name {
+      font: 800 46px 'Segoe UI', Ubuntu, -apple-system, Helvetica, sans-serif;
+      letter-spacing: 2.5px; fill: url(#sheen);
+    }
+    .role {
+      font: 400 16px 'Segoe UI', Ubuntu, -apple-system, Helvetica, sans-serif;
+      letter-spacing: 3.4px; fill: #8FB3C9; text-transform: uppercase;
+    }
+    .mono { font: 500 17px 'Cascadia Code', 'Fira Code', Consolas, 'Liberation Mono', monospace; }
+    .typed  { fill: #D7E6F2; }
+    .prompt { fill: #36BCF7; }
+    .caret  { fill: #36BCF7; }
+
+    .line { opacity: 0; animation: show 14s linear infinite; }
+    .l1 { animation-delay: 0s; }    .l2 { animation-delay: 3.5s; }
+    .l3 { animation-delay: 7s; }    .l4 { animation-delay: 10.5s; }
+
+    @keyframes show { 0% { opacity: 1 } 24.9% { opacity: 1 } 25% { opacity: 0 } 100% { opacity: 0 } }
+
+    /* width animates in character-sized steps, so it reads as typing. */
+    .r1 { animation: t1 14s steps(38) infinite 0s; }
+    .r2 { animation: t2 14s steps(45) infinite 3.5s; }
+    .r3 { animation: t3 14s steps(41) infinite 7s; }
+    .r4 { animation: t4 14s steps(42) infinite 10.5s; }
+    @keyframes t1 { 0%{width:0} 13%{width:418px} 21%{width:418px} 24%{width:0} 100%{width:0} }
+    @keyframes t2 { 0%{width:0} 13%{width:495px} 21%{width:495px} 24%{width:0} 100%{width:0} }
+    @keyframes t3 { 0%{width:0} 13%{width:451px} 21%{width:451px} 24%{width:0} 100%{width:0} }
+    @keyframes t4 { 0%{width:0} 13%{width:462px} 21%{width:462px} 24%{width:0} 100%{width:0} }
+
+    /* The caret rides the same timeline, so it always sits at the clip edge. */
+    .k1 { animation: k1 14s steps(38) infinite 0s, blink 1s steps(1) infinite; }
+    .k2 { animation: k2 14s steps(45) infinite 3.5s, blink 1s steps(1) infinite; }
+    .k3 { animation: k3 14s steps(41) infinite 7s, blink 1s steps(1) infinite; }
+    .k4 { animation: k4 14s steps(42) infinite 10.5s, blink 1s steps(1) infinite; }
+    @keyframes k1 { 0%{x:78px} 13%{x:496px} 21%{x:496px} 24%{x:78px} 100%{x:78px} }
+    @keyframes k2 { 0%{x:78px} 13%{x:573px} 21%{x:573px} 24%{x:78px} 100%{x:78px} }
+    @keyframes k3 { 0%{x:78px} 13%{x:529px} 21%{x:529px} 24%{x:78px} 100%{x:78px} }
+    @keyframes k4 { 0%{x:78px} 13%{x:540px} 21%{x:540px} 24%{x:78px} 100%{x:78px} }
+    @keyframes blink { 0%,50% { opacity: 1 } 51%,100% { opacity: 0.1 } }
+
+    .rise { animation: rise 1s cubic-bezier(.2,.8,.2,1) both; }
+    @keyframes rise { from { opacity: 0; transform: translateY(14px) } to { opacity: 1; transform: none } }
+
+    .pulse { animation: pulse 4.5s ease-in-out infinite; }
+    @keyframes pulse { 0%,100% { opacity: .75 } 50% { opacity: 1 } }
+
+    @media (prefers-reduced-motion: reduce) {
+      .line, .r1, .r2, .r3, .r4, .k1, .k2, .k3, .k4, .rise, .pulse { animation: none }
+      .line.l1 { opacity: 1 } .r1 { width: 418px } .k1 { x: 496px }
+    }
+  </style>
+
+  <g clip-path="url(#card)">
+    <rect width="900" height="280" fill="url(#bg)"/>
+    <rect width="900" height="280" fill="url(#grid)"/>
+
+    <ellipse cx="150" cy="70" rx="260" ry="170" fill="url(#glowA)">
+      <animate attributeName="cx" values="150;340;150" dur="13s" repeatCount="indefinite"/>
+      <animate attributeName="cy" values="70;140;70"   dur="17s" repeatCount="indefinite"/>
+    </ellipse>
+    <ellipse cx="790" cy="220" rx="250" ry="160" fill="url(#glowB)">
+      <animate attributeName="cx" values="790;610;790" dur="15s" repeatCount="indefinite"/>
+      <animate attributeName="cy" values="220;120;220" dur="11s" repeatCount="indefinite"/>
+    </ellipse>
+
+    <g class="rise">
+      <text x="48" y="92" class="role">NLP Research · Multimodal AI · ML Engineering</text>
+      <text x="46" y="152" class="name">TUYEN HO NGUYEN</text>
+      <rect x="48" y="170" width="300" height="2" rx="1" fill="url(#rule)" class="pulse"/>
+    </g>
+
+    <text x="48" y="215" class="mono prompt">&#8250;</text>
+
+    <g class="line l1"><g clip-path="url(#c1)"><text x="78" y="215" class="mono typed">Aspect-Based Sentiment Analysis · ASQP</text></g></g>
+    <g class="line l2"><g clip-path="url(#c2)"><text x="78" y="215" class="mono typed">Medical VQA on Chest X-rays · MedGemma + LoRA</text></g></g>
+    <g class="line l3"><g clip-path="url(#c3)"><text x="78" y="215" class="mono typed">LLM fine-tuning, distillation &amp; evaluation</text></g></g>
+    <g class="line l4"><g clip-path="url(#c4)"><text x="78" y="215" class="mono typed">from the paper to a Docker image that runs</text></g></g>
+
+    <g class="line l1"><rect class="caret k1" y="198" width="9" height="22" rx="1"/></g>
+    <g class="line l2"><rect class="caret k2" y="198" width="9" height="22" rx="1"/></g>
+    <g class="line l3"><rect class="caret k3" y="198" width="9" height="22" rx="1"/></g>
+    <g class="line l4"><rect class="caret k4" y="198" width="9" height="22" rx="1"/></g>
+
+    <rect x="0" y="277" width="900" height="3" fill="url(#rule)" class="pulse"/>
+  </g>
+  <rect x="0.5" y="0.5" width="899" height="279" rx="16" fill="none" stroke="#1E3A52"/>
+</svg>

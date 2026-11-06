@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="278" viewBox="0 0 400 278" role="img" aria-label="Overview">
+  <style>
+    svg { --bg:#FFFFFF; --bd:#D8DEE4; --tx:#1F2328; --mu:#636C76; --ac:#0B6FD4; --hi:#7C4DFF; }
+    @media (prefers-color-scheme: dark) {
+      svg { --bg:#0D1117; --bd:#1E3A52; --tx:#C9D1D9; --mu:#8B949E; --ac:#36BCF7; --hi:#9D7BFF; }
+    }
+
+    .rise { opacity:0; animation: rise .55s cubic-bezier(.2,.8,.2,1) both; }
+    @keyframes rise { from { opacity:0; transform: translateY(8px) } to { opacity:1; transform:none } }
+    @media (prefers-reduced-motion: reduce) {
+      .rise { animation:none; opacity:1 } .wipe { animation:none; width:100% } .shine { display:none }
+    }
+
+    .t { font: 700 16px 'Segoe UI', Ubuntu, -apple-system, sans-serif; fill: var(--ac); letter-spacing:.3px }
+    .k { font: 400 14px 'Segoe UI', Ubuntu, -apple-system, sans-serif; fill: var(--tx) }
+    .v { font: 700 14px 'Segoe UI', Ubuntu, -apple-system, sans-serif; fill: var(--ac) }
+    .s { font: 400 11px 'Segoe UI', Ubuntu, -apple-system, sans-serif; fill: var(--mu) }
+  </style>
+  <defs>
+    <linearGradient id="edge" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="var(--ac)"/><stop offset="100%" stop-color="var(--hi)"/>
+    </linearGradient>
+  </defs>
+  <rect x="0.5" y="0.5" width="399" height="277" rx="12" fill="var(--bg)" stroke="var(--bd)"/>
+  <rect x="0" y="0" width="400" height="3" rx="1.5" fill="url(#edge)"/>
+  <text x="24" y="38" class="t">Overview</text>
+  <g class="rise" style="animation-delay:0.00s"><circle cx="28" cy="67" r="2.5" fill="var(--ac)" opacity=".55"/><text x="40" y="72" class="k">Public repositories</text><text x="376" y="72" class="v" text-anchor="end">24</text></g>
+  <g class="rise" style="animation-delay:0.07s"><circle cx="28" cy="93" r="2.5" fill="var(--ac)" opacity=".55"/><text x="40" y="98" class="k">Stars earned</text><text x="376" y="98" class="v" text-anchor="end">4</text></g>
+  <g class="rise" style="animation-delay:0.14s"><circle cx="28" cy="119" r="2.5" fill="var(--ac)" opacity=".55"/><text x="40" y="124" class="k">Forks</text><text x="376" y="124" class="v" text-anchor="end">1</text></g>
+  <g class="rise" style="animation-delay:0.21s"><circle cx="28" cy="145" r="2.5" fill="var(--ac)" opacity=".55"/><text x="40" y="150" class="k">Followers</text><text x="376" y="150" class="v" text-anchor="end">1</text></g>
+  <g class="rise" style="animation-delay:0.28s"><circle cx="28" cy="171" r="2.5" fill="var(--ac)" opacity=".55"/><text x="40" y="176" class="k">Languages in use</text><text x="376" y="176" class="v" text-anchor="end">9</text></g>
+  <g class="rise" style="animation-delay:0.35s"><circle cx="28" cy="197" r="2.5" fill="var(--ac)" opacity=".55"/><text x="40" y="202" class="k">Code on GitHub</text><text x="376" y="202" class="v" text-anchor="end">161 MB</text></g>
+  <g class="rise" style="animation-delay:0.42s"><circle cx="28" cy="223" r="2.5" fill="var(--ac)" opacity=".55"/><text x="40" y="228" class="k">Member since</text><text x="376" y="228" class="v" text-anchor="end">2022 · 4 yrs</text></g>
+  <text x="24" y="260" class="s">across 24 source repositories · regenerated daily</text>
+</svg>
