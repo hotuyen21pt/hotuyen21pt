@@ -26,10 +26,10 @@
   <text x="24" y="38" class="t">Overview</text>
   <g class="rise" style="animation-delay:0.00s"><circle cx="28" cy="67" r="2.5" fill="var(--ac)" opacity=".55"/><text x="40" y="72" class="k">Public repositories</text><text x="376" y="72" class="v" text-anchor="end">24</text></g>
   <g class="rise" style="animation-delay:0.07s"><circle cx="28" cy="93" r="2.5" fill="var(--ac)" opacity=".55"/><text x="40" y="98" class="k">Stars earned</text><text x="376" y="98" class="v" text-anchor="end">4</text></g>
-  <g class="rise" style="animation-delay:0.14s"><circle cx="28" cy="119" r="2.5" fill="var(--ac)" opacity=".55"/><text x="40" y="124" class="k">Forks</text><text x="376" y="124" class="v" text-anchor="end">1</text></g>
+  <g class="rise" style="animation-delay:0.14s"><circle cx="28" cy="119" r="2.5" fill="var(--ac)" opacity=".55"/><text x="40" y="124" class="k">Forks</text><text x="376" y="124" class="v" text-anchor="end">5</text></g>
   <g class="rise" style="animation-delay:0.21s"><circle cx="28" cy="145" r="2.5" fill="var(--ac)" opacity=".55"/><text x="40" y="150" class="k">Followers</text><text x="376" y="150" class="v" text-anchor="end">1</text></g>
-  <g class="rise" style="animation-delay:0.28s"><circle cx="28" cy="171" r="2.5" fill="var(--ac)" opacity=".55"/><text x="40" y="176" class="k">Languages in use</text><text x="376" y="176" class="v" text-anchor="end">9</text></g>
+  <g class="rise" style="animation-delay:0.28s"><circle cx="28" cy="171" r="2.5" fill="var(--ac)" opacity=".55"/><text x="40" y="176" class="k">Languages in use</text><text x="376" y="176" class="v" text-anchor="end">10</text></g>
   <g class="rise" style="animation-delay:0.35s"><circle cx="28" cy="197" r="2.5" fill="var(--ac)" opacity=".55"/><text x="40" y="202" class="k">Code on GitHub</text><text x="376" y="202" class="v" text-anchor="end">161 MB</text></g>
-  <g class="rise" style="animation-delay:0.42s"><circle cx="28" cy="223" r="2.5" fill="var(--ac)" opacity=".55"/><text x="40" y="228" class="k">Member since</text><text x="376" y="228" class="v" text-anchor="end">2022 · 4 yrs</text></g>
+  <g class="rise" style="animation-delay:0.42s"><circle cx="28" cy="223" r="2.5" fill="var(--ac)" opacity=".55"/><text x="40" y="228" class="k">Member since</text><text x="376" y="228" class="v" text-anchor="end">2022 · 3 yrs</text></g>
   <text x="24" y="260" class="s">across 24 source repositories · regenerated daily</text>
 </svg>

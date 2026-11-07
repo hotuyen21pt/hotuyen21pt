@@ -32,22 +32,22 @@
   <defs><clipPath id="barclip"><rect class="wipe" x="24" y="56" width="0" height="12" rx="6"/></clipPath>
     <linearGradient id="gloss" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#fff" stop-opacity="0"/><stop offset="50%" stop-color="#fff" stop-opacity=".55"/><stop offset="100%" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>
   <g clip-path="url(#barclip)">
-      <rect x="24.0" y="56" width="152.1" height="12" rx="6" fill="#DA5B0B"/>
-      <rect x="176.1" y="56" width="105.3" height="12" rx="0" fill="#3572A5"/>
-      <rect x="281.4" y="56" width="58.5" height="12" rx="0" fill="#E34C26"/>
-      <rect x="339.9" y="56" width="14.8" height="12" rx="0" fill="#3178C6"/>
-      <rect x="354.7" y="56" width="12.7" height="12" rx="0" fill="#00ADD8"/>
-      <rect x="367.4" y="56" width="5.3" height="12" rx="0" fill="#663399"/>
-      <rect x="372.7" y="56" width="2.9" height="12" rx="0" fill="#F1E05A"/>
-      <rect x="375.6" y="56" width="0.4" height="12" rx="6" fill="#384D54"/>
+      <rect x="24.0" y="56" width="184.9" height="12" rx="6" fill="#DA5B0B"/>
+      <rect x="208.9" y="56" width="115.1" height="12" rx="0" fill="#3572A5"/>
+      <rect x="324.0" y="56" width="23.8" height="12" rx="0" fill="#E34C26"/>
+      <rect x="347.8" y="56" width="7.1" height="12" rx="0" fill="#F1E05A"/>
+      <rect x="354.8" y="56" width="6.6" height="12" rx="0" fill="#3D6117"/>
+      <rect x="361.5" y="56" width="5.8" height="12" rx="0" fill="#3178C6"/>
+      <rect x="367.2" y="56" width="5.1" height="12" rx="0" fill="#00ADD8"/>
+      <rect x="372.3" y="56" width="3.7" height="12" rx="6" fill="#663399"/>
     <rect class="shine" x="24" y="56" width="80" height="12" fill="url(#gloss)"/>
   </g>
-  <g class="rise" style="animation-delay:0.90s"><circle cx="29" cy="88" r="5" fill="#DA5B0B"/><text x="41" y="92" class="k">Jupyter Notebook</text><text x="180" y="92" class="v" text-anchor="end">43.2%</text></g>
-  <g class="rise" style="animation-delay:0.96s"><circle cx="217" cy="88" r="5" fill="#3572A5"/><text x="229" y="92" class="k">Python</text><text x="368" y="92" class="v" text-anchor="end">29.9%</text></g>
-  <g class="rise" style="animation-delay:1.02s"><circle cx="29" cy="112" r="5" fill="#E34C26"/><text x="41" y="116" class="k">HTML</text><text x="180" y="116" class="v" text-anchor="end">16.6%</text></g>
-  <g class="rise" style="animation-delay:1.08s"><circle cx="217" cy="112" r="5" fill="#3178C6"/><text x="229" y="116" class="k">TypeScript</text><text x="368" y="116" class="v" text-anchor="end">4.2%</text></g>
-  <g class="rise" style="animation-delay:1.14s"><circle cx="29" cy="136" r="5" fill="#00ADD8"/><text x="41" y="140" class="k">Go</text><text x="180" y="140" class="v" text-anchor="end">3.6%</text></g>
-  <g class="rise" style="animation-delay:1.20s"><circle cx="217" cy="136" r="5" fill="#663399"/><text x="229" y="140" class="k">CSS</text><text x="368" y="140" class="v" text-anchor="end">1.5%</text></g>
-  <g class="rise" style="animation-delay:1.26s"><circle cx="29" cy="160" r="5" fill="#F1E05A"/><text x="41" y="164" class="k">JavaScript</text><text x="180" y="164" class="v" text-anchor="end">0.8%</text></g>
-  <g class="rise" style="animation-delay:1.32s"><circle cx="217" cy="160" r="5" fill="#384D54"/><text x="229" y="164" class="k">Dockerfile</text><text x="368" y="164" class="v" text-anchor="end">0.1%</text></g>
+  <g class="rise" style="animation-delay:0.90s"><circle cx="29" cy="88" r="5" fill="#DA5B0B"/><text x="41" y="92" class="k">Jupyter Notebook</text><text x="180" y="92" class="v" text-anchor="end">52.5%</text></g>
+  <g class="rise" style="animation-delay:0.96s"><circle cx="217" cy="88" r="5" fill="#3572A5"/><text x="229" y="92" class="k">Python</text><text x="368" y="92" class="v" text-anchor="end">32.7%</text></g>
+  <g class="rise" style="animation-delay:1.02s"><circle cx="29" cy="112" r="5" fill="#E34C26"/><text x="41" y="116" class="k">HTML</text><text x="180" y="116" class="v" text-anchor="end">6.8%</text></g>
+  <g class="rise" style="animation-delay:1.08s"><circle cx="217" cy="112" r="5" fill="#F1E05A"/><text x="229" y="116" class="k">JavaScript</text><text x="368" y="116" class="v" text-anchor="end">2.0%</text></g>
+  <g class="rise" style="animation-delay:1.14s"><circle cx="29" cy="136" r="5" fill="#3D6117"/><text x="41" y="140" class="k">TeX</text><text x="180" y="140" class="v" text-anchor="end">1.9%</text></g>
+  <g class="rise" style="animation-delay:1.20s"><circle cx="217" cy="136" r="5" fill="#3178C6"/><text x="229" y="140" class="k">TypeScript</text><text x="368" y="140" class="v" text-anchor="end">1.6%</text></g>
+  <g class="rise" style="animation-delay:1.26s"><circle cx="29" cy="160" r="5" fill="#00ADD8"/><text x="41" y="164" class="k">Go</text><text x="180" y="164" class="v" text-anchor="end">1.4%</text></g>
+  <g class="rise" style="animation-delay:1.32s"><circle cx="217" cy="160" r="5" fill="#663399"/><text x="229" y="164" class="k">CSS</text><text x="368" y="164" class="v" text-anchor="end">1.0%</text></g>
 </svg>
