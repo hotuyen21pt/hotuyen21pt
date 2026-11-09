@@ -1,5 +1,7 @@
 <div align="center">
 
+<a name="portrait"><img src="assets/portrait.svg" width="440" alt="Tuyen Ho Nguyen - dot-matrix portrait" /></a>
+
 <img src="assets/banner.svg" width="100%" alt="Tuyen Ho Nguyen — NLP Research · Multimodal AI · ML Engineering" />
 
 <br/>

@@ -713,6 +713,157 @@ def techstack_html() -> str:
     return "\n\n".join(out)
 
 
+# ------------------------------------------------------------- dot portrait
+
+# Colour grid sampled from a picture by scripts/sample_portrait.ps1.
+PORTRAIT = json.loads((pathlib.Path(__file__).resolve().parent / "portrait.json")
+                      .read_text(encoding="utf-8"))
+
+DOT = 7.2               # grid pitch
+CARD_X, CARD_Y = 30, 62
+SPARK_COLORS = ["#36BCF7", "#7C4DFF", "#2EE6A6", "#FFFFFF"]
+
+
+def _hsl_tweak(hex_: str, sat: float = 1.05, light: float = 1.08) -> str:
+    """Push a sampled colour a little brighter and more saturated - dots on a
+    dark panel read duller than the same pixels in a photo."""
+    import colorsys
+    r, g, b = (int(hex_[i:i + 2], 16) / 255 for i in (0, 2, 4))
+    h, l, s = colorsys.rgb_to_hls(r, g, b)
+    r, g, b = colorsys.hls_to_rgb(h, min(1, l * light), min(1, s * sat))
+    return f"#{int(r * 255):02X}{int(g * 255):02X}{int(b * 255):02X}"
+
+
+def _sparkle(x: float, y: float, s: float) -> str:
+    """A four-point star centred on (x, y) with arm length s."""
+    k = s * 0.28
+    return (f"M{x:.1f},{y - s:.1f} Q{x + k:.1f},{y - k:.1f} {x + s:.1f},{y:.1f} "
+            f"Q{x + k:.1f},{y + k:.1f} {x:.1f},{y + s:.1f} "
+            f"Q{x - k:.1f},{y + k:.1f} {x - s:.1f},{y:.1f} "
+            f"Q{x - k:.1f},{y - k:.1f} {x:.1f},{y - s:.1f}Z")
+
+
+def portrait() -> str:
+    """The picture redrawn as a dot matrix on a dark panel, under a mortarboard.
+
+    Bright, colourless cells are the picture's background: they stay as faint
+    dots so the subject stands out. Rows fade in top to bottom, then a scan
+    band keeps sweeping the panel and sparkles twinkle around it.
+    """
+    cols, rows, cells = PORTRAIT["cols"], PORTRAIT["rows"], PORTRAIT["cells"]
+    grid_w, grid_h = (cols - 1) * DOT, (rows - 1) * DOT
+    card_w = grid_w + 56
+    card_h = grid_h + 64
+    gx = CARD_X + (card_w - grid_w) / 2
+    gy = CARD_Y + 36
+    W = int(card_w + 2 * CARD_X)
+    cx = W / 2
+    name_y = CARD_Y + card_h + 52
+    H = int(name_y + 34)
+
+    row_groups = []
+    for r, line in enumerate(cells):
+        dots = []
+        for c, hx in enumerate(line):
+            R, G, B = (int(hx[i:i + 2], 16) for i in (0, 2, 4))
+            luma = 0.299 * R + 0.587 * G + 0.114 * B
+            sat = (max(R, G, B) - min(R, G, B)) / max(1, max(R, G, B))
+            x, y = gx + c * DOT, gy + r * DOT
+            if luma > 215 and sat < 0.14:           # background
+                dots.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="1.5" fill="#C9D1D9" fill-opacity=".22"/>')
+            elif luma < 40:                          # ink lines, pupils, nose
+                dots.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="2.4" fill="#8FA3BF"/>')
+            else:
+                # Halftone: brighter cells get bigger dots, which is what gives
+                # a flat fill its shading.
+                rad = 1.6 + 1.5 * min(1.0, luma / 200)
+                dots.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="{rad:.2f}" fill="{_hsl_tweak(hx)}"/>')
+        row_groups.append(f'<g class="rw" style="animation-delay:{0.2 + r * 0.028:.3f}s">{"".join(dots)}</g>')
+
+    rng = random.Random(7)
+    sparks = []
+    for i in range(16):
+        # Keep sparkles in the margin band or sparse over the panel edge.
+        x = rng.uniform(CARD_X + 8, CARD_X + card_w - 8)
+        y = rng.uniform(CARD_Y + 8, CARD_Y + card_h - 8)
+        s = rng.choice([3.5, 4.5, 5.5])
+        col = SPARK_COLORS[i % len(SPARK_COLORS)]
+        sparks.append(
+            f'<path class="tw" d="{_sparkle(x, y, s)}" fill="{col}" '
+            f'style="animation-duration:{rng.uniform(2.2, 4.8):.1f}s;animation-delay:{rng.uniform(0, 4):.1f}s"/>'
+        )
+
+    # Mortarboard straddling the panel's top edge, drawn around (cx, 0).
+    cap = f"""<g transform="translate({cx:.1f},14)">
+    <g class="cap">
+      <path d="M-44,40 L-44,62 Q0,82 44,62 L44,40 Z" fill="#1A2233"/>
+      <path d="M-44,62 Q0,82 44,62" fill="none" stroke="url(#capBand)" stroke-width="4" stroke-linecap="round"/>
+      <path d="M-72,26 L0,0 L72,26 L0,52 Z" fill="#141C2B" stroke="#5B9BF8" stroke-width="3" stroke-linejoin="round"/>
+      <circle cx="0" cy="26" r="3.2" fill="#5B9BF8"/>
+      <g class="tassel">
+        <path d="M0,26 L66,28 L66,58" fill="none" stroke="#2EE6A6" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="66" cy="62" r="5.5" fill="#2EE6A6"/>
+      </g>
+    </g>
+  </g>"""
+
+    return f"""<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" viewBox="0 0 {W} {H}" role="img" aria-label="Dot-matrix portrait of {NAME}">
+  <defs>
+    <linearGradient id="capBand" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#7C4DFF"/><stop offset="100%" stop-color="#C4A8FF"/>
+    </linearGradient>
+    <linearGradient id="scan" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#36BCF7" stop-opacity="0"/>
+      <stop offset="50%" stop-color="#36BCF7" stop-opacity=".16"/>
+      <stop offset="100%" stop-color="#36BCF7" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="rimP" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#2F5A93"/>
+      <stop offset="50%" stop-color="#7C4DFF" stop-opacity=".7"/>
+      <stop offset="100%" stop-color="#2F5A93"/>
+      <animateTransform attributeName="gradientTransform" type="rotate" from="0 .5 .5" to="360 .5 .5" dur="9s" repeatCount="indefinite"/>
+    </linearGradient>
+    <clipPath id="panel"><rect x="{CARD_X + 8}" y="{CARD_Y + 8}" width="{card_w - 16}" height="{card_h - 16}" rx="16"/></clipPath>
+  </defs>
+  <style>
+    svg {{ --ink:#1F2328; --dim:#57606A }}
+    @media (prefers-color-scheme: dark) {{ svg {{ --ink:#F0F6FC; --dim:#8B949E }} }}
+    .rw {{ opacity:0; animation: rw .6s cubic-bezier(.22,1,.36,1) both }}
+    @keyframes rw {{ from {{ opacity:0; transform: translateY(-3px) }} to {{ opacity:1; transform:none }} }}
+    .scan {{ animation: scan 6s 2.2s cubic-bezier(.45,0,.55,1) infinite }}
+    @keyframes scan {{ 0% {{ transform: translateY(-90px) }} 60%,100% {{ transform: translateY({card_h + 40}px) }} }}
+    .tw {{ transform-box: fill-box; transform-origin: center; animation: tw 3s ease-in-out infinite }}
+    @keyframes tw {{ 0%,100% {{ opacity:.15; transform: scale(.55) rotate(0deg) }} 50% {{ opacity:1; transform: scale(1) rotate(45deg) }} }}
+    .cap {{ transform-box: fill-box; transform-origin: center; animation: bob 4.5s ease-in-out infinite }}
+    @keyframes bob {{ 0%,100% {{ transform: none }} 50% {{ transform: translateY(-4px) rotate(-2deg) }} }}
+    /* Pivot on the top-left of the tassel's box, which is the button it hangs from. */
+    .tassel {{ transform-box: fill-box; transform-origin: 0 0; animation: swing 2.2s ease-in-out infinite }}
+    @keyframes swing {{ 0%,100% {{ transform: rotate(-7deg) }} 50% {{ transform: rotate(9deg) }} }}
+    .nm {{ font: 800 32px 'Segoe UI',Ubuntu,-apple-system,sans-serif; fill: var(--ink); letter-spacing: .3px }}
+    .sb {{ font: 500 11px 'JetBrains Mono','Cascadia Code',Consolas,monospace; fill: var(--dim); letter-spacing: 2.4px }}
+    .fade {{ animation: rw .8s 1.6s cubic-bezier(.22,1,.36,1) both }}
+    @media (prefers-reduced-motion: reduce) {{
+      .rw,.scan,.tw,.cap,.tassel,.fade {{ animation: none !important; opacity: 1 }} .scan {{ display: none }}
+    }}
+  </style>
+
+  <rect x="{CARD_X}" y="{CARD_Y}" width="{card_w}" height="{card_h}" rx="22" fill="#0A0E15"/>
+  <rect x="{CARD_X + 8}" y="{CARD_Y + 8}" width="{card_w - 16}" height="{card_h - 16}" rx="16" fill="#0D1117" stroke="url(#rimP)" stroke-width="2"/>
+  <g clip-path="url(#panel)">
+    {chr(10).join(row_groups)}
+    <rect class="scan" x="{CARD_X}" y="{CARD_Y - 60}" width="{card_w}" height="70" fill="url(#scan)"/>
+  </g>
+  {chr(10).join(sparks)}
+  {cap}
+
+  <g class="fade">
+    <text x="{cx:.1f}" y="{name_y}" text-anchor="middle" class="nm">{NAME}</text>
+    <text x="{cx:.1f}" y="{name_y + 24}" text-anchor="middle" class="sb">NLP · MULTIMODAL AI · ML ENGINEERING</text>
+  </g>
+</svg>
+"""
+
+
 # ------------------------------------------------------------ project cards
 
 
@@ -914,7 +1065,8 @@ def main() -> None:
     ASSETS.mkdir(exist_ok=True)
     for name, svg in (("banner.svg", banner()),
                       ("divider.svg", divider()),
-                      ("signoff.svg", signoff())):
+                      ("signoff.svg", signoff()),
+                      ("portrait.svg", portrait())):
         (ASSETS / name).write_text(svg, encoding="utf-8")
         print(f"wrote assets/{name}")
 
