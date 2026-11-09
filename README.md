@@ -8,7 +8,7 @@
 
 </div>
 
-<br/>
+<div align="center"><a name="break-about"><img src="assets/divider.svg" width="100%" alt="" /></a></div>
 
 <a name="about"><img src="assets/sections/about.svg" width="100%" alt="01 — About me" /></a>
 
@@ -25,7 +25,7 @@ implementation with tests, to a Docker image someone else can actually run.
 
 <a name="focus"><img src="assets/focus.svg" width="100%" alt="Research focus: Aspect Sentiment Quad Prediction; Multilingual and Vietnamese NLP; Multimodal Medical AI; Evaluation that means something" /></a>
 
-<br/>
+<div align="center"><a name="break-stack"><img src="assets/divider.svg" width="100%" alt="" /></a></div>
 
 <a name="stack"><img src="assets/sections/stack.svg" width="100%" alt="02 — Technology arsenal" /></a>
 
@@ -55,7 +55,7 @@ implementation with tests, to a Docker image someone else can actually run.
 </details>
 <!--/techstack-->
 
-<br/>
+<div align="center"><a name="break-work"><img src="assets/divider.svg" width="100%" alt="" /></a></div>
 
 <a name="work"><img src="assets/sections/work.svg" width="100%" alt="03 — Featured work" /></a>
 
@@ -88,7 +88,7 @@ implementation with tests, to a Docker image someone else can actually run.
 
 </details>
 
-<br/>
+<div align="center"><a name="break-telemetry"><img src="assets/divider.svg" width="100%" alt="" /></a></div>
 
 <a name="telemetry"><img src="assets/sections/telemetry.svg" width="100%" alt="04 — Telemetry" /></a>
 
@@ -100,7 +100,7 @@ implementation with tests, to a Docker image someone else can actually run.
 
 </div>
 
-<br/>
+<div align="center"><a name="break-end"><img src="assets/divider.svg" width="100%" alt="" /></a></div>
 
 <div align="center">
 

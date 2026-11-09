@@ -260,6 +260,36 @@ def banner() -> str:
 """
 
 
+def divider() -> str:
+    """A scanline with a bright round travelling along it - the break between
+    sections. Section titles are images, not ## headings, so it no longer
+    doubles up with GitHub's heading underline."""
+    return """<svg xmlns="http://www.w3.org/2000/svg" width="900" height="8" viewBox="0 0 900 8" role="presentation">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#36BCF7" stop-opacity="0"/>
+      <stop offset="25%" stop-color="#36BCF7" stop-opacity="0.85"/>
+      <stop offset="55%" stop-color="#7C4DFF" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#36BCF7" stop-opacity="0"/>
+      <animate attributeName="x1" values="-0.6;0.6;-0.6" dur="9s" repeatCount="indefinite"/>
+      <animate attributeName="x2" values="0.4;1.6;0.4" dur="9s" repeatCount="indefinite"/>
+    </linearGradient>
+    <radialGradient id="blip">
+      <stop offset="0%" stop-color="#9FE8FF" stop-opacity="1"/>
+      <stop offset="100%" stop-color="#36BCF7" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <style>
+    .blip { animation: run 6s cubic-bezier(.45,0,.55,1) infinite }
+    @keyframes run { 0% { transform: translateX(-30px) } 100% { transform: translateX(930px) } }
+    @media (prefers-reduced-motion: reduce) { .blip { display: none } }
+  </style>
+  <rect y="3" width="900" height="2" rx="1" fill="url(#g)"/>
+  <circle class="blip" cx="0" cy="4" r="7" fill="url(#blip)"/>
+</svg>
+"""
+
+
 NAME = "Tuyen Ho Nguyen"
 
 # The signature is an outline, not <text>. A font-based signature is laid out
@@ -930,33 +960,24 @@ SECTION_W = 830
 
 
 def section_title(n: int, title: str, hint: str) -> str:
-    """Numbered section title with a rule that draws in. It replaces a
-    markdown ## heading, whose own underline doubled up with the old divider."""
-    w, h = SECTION_W, 62
+    """Numbered section title. It replaces a markdown ## heading so GitHub draws
+    no underline of its own; the travelling-light divider above it is the
+    only break between sections."""
+    w, h = SECTION_W, 56
     return f"""<svg xmlns="http://www.w3.org/2000/svg" width="{w}" height="{h}" viewBox="0 0 {w} {h}" role="img" aria-label="{escape(title)}">
-  <defs>
-    <linearGradient id="rule" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" style="stop-color:var(--ac)"/>
-      <stop offset="45%" style="stop-color:var(--hi)"/>
-      <stop offset="100%" style="stop-color:var(--hi);stop-opacity:0"/>
-    </linearGradient>
-  </defs>
   <style>{UI_CSS}
     .no {{ font: 700 12px {MONO_FONT}; fill: var(--ac); letter-spacing: 1.5px }}
     .tt {{ font: 800 25px {FONT}; fill: var(--ink) }}
     .hn {{ font: 500 10.5px {MONO_FONT}; fill: var(--mu); letter-spacing: .4px }}
-    .rl {{ stroke-dasharray: {w}; stroke-dashoffset: {w}; animation: draw 1.2s .15s {EASE} forwards }}
-    @keyframes draw {{ to {{ stroke-dashoffset: 0 }} }}
     .in {{ animation: in .6s {EASE} both }}
     @keyframes in {{ from {{ opacity:0; transform: translateX(-8px) }} to {{ opacity:1; transform:none }} }}
-    @media (prefers-reduced-motion: reduce) {{ .rl,.in {{ animation: none }} .rl {{ stroke-dashoffset: 0 }} }}
+    @media (prefers-reduced-motion: reduce) {{ .in {{ animation: none }} }}
   </style>
   <g class="in">
     <text x="0" y="17" class="no">{n:02d} / {len(SECTIONS):02d}</text>
     <text x="0" y="46" class="tt">{escape(title)}</text>
   </g>
   <text x="{w}" y="46" text-anchor="end" class="hn">{escape(hint)}</text>
-  <line class="rl" x1="0" y1="{h - 3}" x2="{w}" y2="{h - 3}" stroke="url(#rule)" stroke-width="2" stroke-linecap="round"/>
 </svg>
 """
 
@@ -1215,6 +1236,7 @@ def patch_block(marker: str, html: str) -> None:
 def main() -> None:
     ASSETS.mkdir(exist_ok=True)
     for name, svg in (("banner.svg", banner()),
+                      ("divider.svg", divider()),
                       ("signoff.svg", signoff()),
                       ("portrait.svg", portrait())):
         (ASSETS / name).write_text(svg, encoding="utf-8")
