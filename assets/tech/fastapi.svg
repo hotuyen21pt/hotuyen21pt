@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="100" height="74" viewBox="0 0 100 74" role="img" aria-label="FastAPI">
+  <style>
+    svg { --panel:#F6F8FA; --ink:#1F2328; --dim:#636C76 }
+    @media (prefers-color-scheme: dark) {
+      svg { --panel:#161B26; --ink:#E6EDF3; --dim:#8B949E }
+    }
+    .lb { font: 600 11px 'Segoe UI',Ubuntu,-apple-system,sans-serif; fill: var(--ink) }
+    .mn { font: 800 12px 'Segoe UI',Ubuntu,-apple-system,sans-serif }
+  </style>
+  <rect x=".75" y=".75" width="98.5" height="72.5" rx="9" fill="var(--panel)" stroke="#009688" stroke-width="1.5"/>
+  <rect x="32.0" y="9" width="36" height="36" rx="8" fill="#009688"/>
+  <path transform="translate(39.0 16) scale(0.9167)" fill="#FFFFFF" d="M12 .0387C5.3729.0384.0003 5.3931 0 11.9988c-.001 6.6066 5.372 11.9628 12 11.9625 6.628.0003 12.001-5.3559 12-11.9625-.0003-6.6057-5.3729-11.9604-12-11.96m-.829 5.4153h7.55l-7.5805 5.3284h5.1828L5.279 18.5436q2.9466-6.5444 5.892-13.0896"/>
+  <text x="50.0" y="62" text-anchor="middle" class="lb">FastAPI</text>
+</svg>

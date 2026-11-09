@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="100" height="74" viewBox="0 0 100 74" role="img" aria-label="Faster R-CNN">
+  <style>
+    svg { --panel:#F6F8FA; --ink:#1F2328; --dim:#636C76 }
+    @media (prefers-color-scheme: dark) {
+      svg { --panel:#161B26; --ink:#E6EDF3; --dim:#8B949E }
+    }
+    .lb { font: 600 11px 'Segoe UI',Ubuntu,-apple-system,sans-serif; fill: var(--ink) }
+    .mn { font: 800 12px 'Segoe UI',Ubuntu,-apple-system,sans-serif }
+  </style>
+  <rect x=".75" y=".75" width="98.5" height="72.5" rx="9" fill="var(--panel)" stroke="#E34F26" stroke-width="1.5"/>
+  <rect x="32.0" y="9" width="36" height="36" rx="8" fill="#E34F26"/>
+  <text x="50.0" y="30.8" text-anchor="middle" class="mn" style="font-size:10.5px" fill="#FFFFFF">RCNN</text>
+  <text x="50.0" y="62" text-anchor="middle" class="lb">Faster R-CNN</text>
+</svg>

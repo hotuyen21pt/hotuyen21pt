@@ -9,8 +9,9 @@ banners end up with the caret floating in empty space.
 
     python scripts/gen_art.py
 
-Writes assets/banner.svg, assets/divider.svg, assets/signoff.svg and
-assets/techstack.svg.
+Writes assets/banner.svg, assets/divider.svg, assets/signoff.svg, one tile per
+technology under assets/tech/, and the tech-stack grid in README.md between
+the <!--techstack--> markers.
 Every file carries a light and a dark palette; GitHub renders whichever the
 reader's theme asks for.
 """
@@ -20,6 +21,9 @@ from __future__ import annotations
 import json
 import pathlib
 import random
+import re
+import textwrap
+from dataclasses import dataclass
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 ASSETS = ROOT / "assets"
@@ -281,7 +285,7 @@ def divider() -> str:
 """
 
 
-NAME = "Tuyen Nguyen"
+NAME = "Tuyen Ho Nguyen"
 
 # The signature is an outline, not <text>. A font-based signature is laid out
 # by whatever cursive face the reader happens to own, so its width is unknown
@@ -290,7 +294,7 @@ NAME = "Tuyen Nguyen"
 #
 #   Add-Type -AssemblyName PresentationCore,PresentationFramework,WindowsBase
 #   $tf = New-Object System.Windows.Media.Typeface("Segoe Script")
-#   $ft = New-Object System.Windows.Media.FormattedText("Tuyen Nguyen",
+#   $ft = New-Object System.Windows.Media.FormattedText("Tuyen Ho Nguyen",
 #           [Globalization.CultureInfo]::InvariantCulture,
 #           [Windows.FlowDirection]::LeftToRight, $tf, 42,
 #           [Windows.Media.Brushes]::Black, 1.0)
@@ -298,7 +302,7 @@ NAME = "Tuyen Nguyen"
 #
 # then stripped of its "F1" fill-rule prefix and rounded to two decimals.
 SIG_PATH = pathlib.Path(__file__).resolve().parent / "signature.path"
-SIG_INK_W = 324.35          # measured width of the drawn glyphs
+SIG_INK_W = 397.64          # measured width of the drawn glyphs
 SIG_BASELINE = 45.73        # baseline offset inside the path's own space
 
 
@@ -314,6 +318,7 @@ def signoff() -> str:
     dy = baseline - SIG_BASELINE
     pen = int(SIG_INK_W + 8)                    # clip clears the last stroke
     rule = int(SIG_INK_W)
+    cap_dx = round(sx + SIG_INK_W + 20 - 422)   # cap is drawn from x=422; keep it clear of the ink
     w, h = 560, 150
     return f"""<svg xmlns="http://www.w3.org/2000/svg" width="{w}" height="{h}" viewBox="0 0 {w} {h}" role="img" aria-label="Signed, {NAME}">
   <defs>
@@ -357,7 +362,7 @@ def signoff() -> str:
   <rect class="underline" x="{sx}" y="98" width="0" height="2" rx="1" fill="url(#ink)" opacity=".55"/>
   <text x="{sx}" y="126" class="cap-line">MSc-track &#183; NLP &amp; Multimodal AI</text>
 
-  <g class="cap">
+  <g transform="translate({cap_dx},0)"><g class="cap">
     <!-- mortarboard: board, cap base, button, tassel -->
     <path d="M422,62 L462,48 L502,62 L462,76 Z" fill="var(--ac)"/>
     <path d="M440,68 L440,84 Q462,94 484,84 L484,68 L462,77 Z" fill="var(--hi)"/>
@@ -366,47 +371,117 @@ def signoff() -> str:
       <path d="M484,56 L484,80" stroke="var(--hi)" stroke-width="2" fill="none" stroke-linecap="round"/>
       <circle cx="484" cy="84" r="4.5" fill="var(--ac)"/>
     </g>
-  </g>
+  </g></g>
 </svg>
 """
 
 
-# Glyphs are simple-icons@13.21.0 paths (24x24 viewBox), vendored so the
-# render needs no network and stays byte-stable.
+# Glyphs are simple-icons paths (24x24 viewBox) - 13.21.0, plus gradio from
+# 14.15.0 and powershell from 10.0.0, the last release that still shipped it.
+# Vendored so the render needs no network and stays byte-stable.
 ICONS = json.loads((pathlib.Path(__file__).resolve().parent / "tech_icons.json")
                    .read_text(encoding="utf-8"))
 
-# (slug, label, brand colour, border override). The override is for brands
-# whose colour is too dark to read as an outline on the dark panel.
+GH = "https://github.com/hotuyen21pt/"
+
+
+@dataclass(frozen=True)
+class Tech:
+    key: str            # output file name: assets/tech/<key>.svg
+    label: str
+    color: str          # brand colour of the icon chip
+    what: str           # what it is used for - shown when the tile is opened
+    repos: tuple = ()
+    glyph: str = ""     # simple-icons slug; empty means draw the monogram
+    mono: str = ""      # chip text when there is no glyph
+    border: str = ""    # outline override for brands too dark to read on dark
+
+
+# Ordered: languages, ML / DL, models, serving & infra.
 TECH = [
-    ("python", "Python", "3776AB", None),
-    ("go", "Go", "00ADD8", None),
-    ("typescript", "TypeScript", "3178C6", None),
-    ("javascript", "JavaScript", "F7DF1E", None),
-    ("postgresql", "SQL", "4169E1", None),
-    ("gnubash", "Shell", "4EAA25", None),
-    ("git", "Git", "F05032", None),
-    ("jupyter", "Jupyter", "F37626", None),
-    ("pytorch", "PyTorch", "EE4C2C", None),
-    ("huggingface", "Hugging Face", "FFD21E", None),
-    ("scikitlearn", "scikit-learn", "F7931E", None),
-    ("opencv", "OpenCV", "5C3EE8", None),
-    ("pandas", "Pandas", "150458", "E70488"),
-    ("numpy", "NumPy", "013243", "4DABCF"),
-    ("ollama", "Ollama", "000000", "var(--dim)"),
-    ("kaggle", "Kaggle", "20BEFF", None),
-    ("fastapi", "FastAPI", "009688", None),
-    ("gin", "Gin", "008ECF", None),
-    ("react", "React", "61DAFB", None),
-    ("vite", "Vite", "646CFF", None),
-    ("docker", "Docker", "2496ED", None),
-    ("githubactions", "GH Actions", "2088FF", None),
-    ("sqlite", "SQLite", "003B57", "0F80CC"),
-    ("pytest", "pytest", "0A9EDC", None),
+    Tech("python", "Python", "3776AB", "Main language of every research repo: data pipelines, training, evaluation, statistics.",
+         ("Prism", "CXR-VQA-custom", "EvidenceKD-MedVQA", "MultiLABSA"), "python"),
+    Tech("go", "Go", "00ADD8", "Backend services in idiomatic Go with a clean cmd/internal layout.",
+         ("Smart-Warehouse-Management", "work_reminder"), "go"),
+    Tech("typescript", "TypeScript", "3178C6", "Typed React 18 frontend for the warehouse system.",
+         ("Smart-Warehouse-Management",), "typescript"),
+    Tech("javascript", "JavaScript", "F7DF1E", "Demo UIs that put research models in front of people.",
+         ("KLTN-Token-Merging", "CXR-VQA-custom"), "javascript"),
+    Tech("sql", "SQL", "4169E1", "Schemas, Alembic migrations and schema verification.",
+         ("Book-Management",), "postgresql"),
+    Tech("shell", "Shell", "4EAA25", "Training launchers, Docker entrypoints and CI steps.",
+         (), "gnubash"),
+    Tech("powershell", "PowerShell", "5391FE", "Windows-side tooling for local runs and asset generation.",
+         (), "powershell"),
+    Tech("git", "Git", "F05032", "Every repo versioned, with a 'decisions that must not be reverted' ledger where it matters.",
+         ("s2it", "tree"), "git"),
+    Tech("jupyter", "Jupyter", "F37626", "Kaggle-reproducible notebooks, EDA and labelling experiments.",
+         ("Automatic-Labelling-Engine-with-LLM", "Customer_Segmentation"), "jupyter"),
+    Tech("pytorch", "PyTorch", "EE4C2C", "Custom training loops: LoRA fine-tuning, distillation, detectors, soft-GIoU loss.",
+         ("CXR-VQA-custom", "EvidenceKD-MedVQA"), "pytorch"),
+    Tech("transformers", "Transformers", "FFD21E", "Loading and fine-tuning T5/mT5, BERT, XLM-R, MedGemma and Qwen.",
+         ("KLTN-Token-Merging", "MultiLABSA", "CXR-VQA-custom"), "huggingface"),
+    Tech("peft", "PEFT / LoRA", "FF6F00", "Parameter-efficient fine-tuning on a single GPU - one adapter, many stages.",
+         ("CXR-VQA-custom", "s2it"), mono="LoRA"),
+    Tech("trl", "TRL / GRPO", "8A2BE2", "GRPO with a rule-based reward and self-consistent voting for Tree-CoT-RT.",
+         ("tree",), mono="TRL"),
+    Tech("sklearn", "scikit-learn", "F7931E", "Classical ML baselines, clustering, regression and metrics.",
+         ("Customer_Segmentation", "House-price-prediction", "text-classification"), "scikitlearn"),
+    Tech("opencv", "OpenCV", "5C3EE8", "Image preprocessing and the computer-vision box counter.",
+         ("Smart-Warehouse-Management", "Detect-CCCD"), "opencv"),
+    Tech("pandas", "Pandas", "150458", "Wrangling review corpora - 1.95M Booking.com reviews in PRISM.",
+         ("Prism", "Customer_Segmentation"), "pandas", border="E70488"),
+    Tech("numpy", "NumPy", "013243", "Numerics behind permutation nulls, BH-FDR and drift estimation.",
+         ("Prism",), "numpy", border="4DABCF"),
+    Tech("medgemma", "MedGemma-4B", "4285F4", "Fine-tuned with LoRA under L_VQA + 0.5*L_bbox for explainable chest X-ray VQA.",
+         ("CXR-VQA-custom",), "googlegemini"),
+    Tech("qwen", "Qwen3-8B", "615CED", "UOS clause segmentation: one opinion, one target per unit.",
+         ("Split_Sentence", "KLTN-Token-Merging"), mono="Qw"),
+    Tech("t5", "mT5 / T5", "4285F4", "Generative quad extraction: GAS, the pipeline T5 stage and the generative teacher.",
+         ("MultiLABSA", "KLTN-Token-Merging"), "google"),
+    Tech("xlmr", "XLM-R / BERT", "0467DF", "Extractive teacher and aspect polarity classification.",
+         ("MultiLABSA", "KLTN-Token-Merging"), "meta"),
+    Tech("openclip", "OpenCLIP", "00B5AD", "Cross-modal confidence calibration from review images.",
+         ("Prism",), mono="CLIP"),
+    Tech("fasterrcnn", "Faster R-CNN", "E34F26", "Evidence detector that grounds medical VQA answers in boxes.",
+         ("EvidenceKD-MedVQA",), mono="RCNN"),
+    Tech("fastapi", "FastAPI", "009688", "REST backends for model demos and CRUD services.",
+         ("KLTN-Token-Merging", "Detect-CCCD", "Book-Management"), "fastapi"),
+    Tech("gin", "Gin", "008ECF", "Go HTTP API with JWT auth for lot tracking.",
+         ("Smart-Warehouse-Management",), "gin"),
+    Tech("gradio", "Gradio", "FF7C00", "Quick interactive UI for the dual-teacher ASQP model.",
+         ("MultiLABSA",), "gradio"),
+    Tech("react", "React", "61DAFB", "Demo and product frontends.",
+         ("KLTN-Token-Merging", "CXR-VQA-custom", "Smart-Warehouse-Management"), "react"),
+    Tech("vite", "Vite", "646CFF", "Frontend build and dev server.",
+         ("Smart-Warehouse-Management",), "vite"),
+    Tech("docker", "Docker", "2496ED", "One-command Docker Compose for research code that runs on a stranger's machine.",
+         ("MultiLABSA", "Prism", "Detect-CCCD", "Book-Management"), "docker"),
+    Tech("actions", "GH Actions", "2088FF", "CI for the OCR API, and the daily job that renders this profile's cards.",
+         ("Detect-CCCD", "hotuyen21pt"), "githubactions"),
+    Tech("ollama", "Ollama", "000000", "Running Qwen3 locally for segmentation and labelling.",
+         ("Split_Sentence", "KLTN-Token-Merging"), "ollama", border="var(--dim)"),
+    Tech("kaggle", "Kaggle GPU", "20BEFF", "Free-GPU training with notebooks anyone can re-run.",
+         ("CXR-VQA-custom",), "kaggle"),
+    Tech("sqlite", "SQLite", "003B57", "Zero-setup storage for small services and bots.",
+         (), "sqlite", border="0F80CC"),
+    Tech("pytest", "pytest", "0A9EDC", "180 tests in EvidenceKD-MedVQA, 95 across the ASQP baselines.",
+         ("EvidenceKD-MedVQA", "s2it", "tree"), "pytest"),
 ]
 
-TILE_W, TILE_H, TILE_GAP, PER_ROW = 100, 74, 12, 8
-ICON = 36
+TILE_W, TILE_H, ICON = 100, 74, 36
+COLS = 6            # 6 x ~140px fits GitHub's README column with the summary marker
+TILE_PX = 92        # rendered width in the README
+NOTE_CHARS = 26    # hand-wrapped note width, see techstack_html()
+
+TILE_CSS = """
+    svg { --panel:#F6F8FA; --ink:#1F2328; --dim:#636C76 }
+    @media (prefers-color-scheme: dark) {
+      svg { --panel:#161B26; --ink:#E6EDF3; --dim:#8B949E }
+    }
+    .lb { font: 600 11px 'Segoe UI',Ubuntu,-apple-system,sans-serif; fill: var(--ink) }
+    .mn { font: 800 12px 'Segoe UI',Ubuntu,-apple-system,sans-serif }
+"""
 
 
 def _luma(hex_: str) -> float:
@@ -414,50 +489,84 @@ def _luma(hex_: str) -> float:
     return 0.299 * r + 0.587 * g + 0.114 * b
 
 
-def techstack() -> str:
-    """A grid of brand tiles: icon chip, coloured outline, label."""
-    rows = -(-len(TECH) // PER_ROW)
-    w = PER_ROW * TILE_W + (PER_ROW - 1) * TILE_GAP + 16
-    h = rows * TILE_H + (rows - 1) * TILE_GAP + 16
-    tiles = []
-    for i, (slug, label, color, border) in enumerate(TECH):
-        x = 8 + (i % PER_ROW) * (TILE_W + TILE_GAP)
-        y = 8 + (i // PER_ROW) * (TILE_H + TILE_GAP)
-        stroke = border if border and border.startswith("var") else f"#{border or color}"
-        glyph = "#1F2328" if _luma(color) > 160 else "#FFFFFF"
-        ix = x + (TILE_W - ICON) / 2
-        s = 22 / 24
-        tiles.append(f"""  <g class="tile" style="animation-delay:{i * 0.04:.2f}s">
-    <rect x="{x + .75}" y="{y + .75}" width="{TILE_W - 1.5}" height="{TILE_H - 1.5}" rx="9" fill="var(--panel)" stroke="{stroke}" stroke-width="1.5"/>
-    <rect x="{ix}" y="{y + 9}" width="{ICON}" height="{ICON}" rx="8" fill="#{color}"/>
-    <path transform="translate({ix + 7} {y + 16}) scale({s:.4f})" fill="{glyph}" d="{ICONS[slug]}"/>
-    <text x="{x + TILE_W / 2}" y="{y + 62}" text-anchor="middle" class="lb">{label}</text>
-  </g>""")
-    body = "\n".join(tiles)
-    return f"""<svg xmlns="http://www.w3.org/2000/svg" width="{w}" height="{h}" viewBox="0 0 {w} {h}" role="img" aria-label="Tech stack: {', '.join(t[1] for t in TECH)}">
-  <style>
-    svg {{ --panel:#F6F8FA; --ink:#1F2328; --dim:#636C76 }}
-    @media (prefers-color-scheme: dark) {{
-      svg {{ --panel:#161B26; --ink:#E6EDF3; --dim:#8B949E }}
-    }}
-    .lb {{ font: 600 11px 'Segoe UI',Ubuntu,-apple-system,sans-serif; fill: var(--ink) }}
-    .tile {{ animation: rise .45s cubic-bezier(.2,.8,.2,1) both }}
-    @keyframes rise {{ from {{ opacity:0; transform: translateY(6px) }} to {{ opacity:1; transform:none }} }}
-    @media (prefers-reduced-motion: reduce) {{ .tile {{ animation: none }} }}
-  </style>
-{body}
+def tile(t: Tech) -> str:
+    """One brand tile: icon chip, coloured outline, label."""
+    stroke = t.border if t.border.startswith("var") else f"#{t.border or t.color}"
+    ink = "#1F2328" if _luma(t.color) > 160 else "#FFFFFF"
+    ix, iy = (TILE_W - ICON) / 2, 9
+    if t.glyph:
+        mark = (f'<path transform="translate({ix + 7} {iy + 7}) scale({22 / 24:.4f})" '
+                f'fill="{ink}" d="{ICONS[t.glyph]}"/>')
+    else:
+        size = 12 if len(t.mono) <= 3 else 10.5
+        mark = (f'<text x="{TILE_W / 2}" y="{iy + ICON / 2 + size * .36:.1f}" text-anchor="middle" '
+                f'class="mn" style="font-size:{size}px" fill="{ink}">{t.mono}</text>')
+    return f"""<svg xmlns="http://www.w3.org/2000/svg" width="{TILE_W}" height="{TILE_H}" viewBox="0 0 {TILE_W} {TILE_H}" role="img" aria-label="{t.label}">
+  <style>{TILE_CSS}  </style>
+  <rect x=".75" y=".75" width="{TILE_W - 1.5}" height="{TILE_H - 1.5}" rx="9" fill="var(--panel)" stroke="{stroke}" stroke-width="1.5"/>
+  <rect x="{ix}" y="{iy}" width="{ICON}" height="{ICON}" rx="8" fill="#{t.color}"/>
+  {mark}
+  <text x="{TILE_W / 2}" y="62" text-anchor="middle" class="lb">{t.label}</text>
 </svg>
 """
+
+
+def techstack_html() -> str:
+    """The README grid: every tile is a <details>, so a click opens its notes.
+
+    GitHub strips scripts and styles from READMEs; <details> is the only
+    click-to-reveal it keeps, and putting one per table cell is what lets each
+    icon open on its own. GitHub also wraps every README image in a link to
+    the file, which would make a click open the SVG instead of the tile; an
+    image already inside an <a name> is left alone, and a name-only anchor
+    does nothing on click, so the click reaches the <summary>.
+    """
+    # GitHub lays README tables out at max-content width, so an opened note
+    # would stretch its column to one long line. Breaking it by hand keeps
+    # the column close to the tile's width.
+    cells = []
+    for t in TECH:
+        notes = "<br/>".join(textwrap.wrap(t.what, NOTE_CHARS))
+        if t.repos:
+            notes += "<br/><br/>" + "<br/>".join(
+                f'📁 <a href="{GH}{r}">{r}</a>' for r in t.repos)
+        cells.append(
+            f'<td align="center" valign="top"><details><summary>'
+            f'<a name="tech-{t.key}"><img src="assets/tech/{t.key}.svg" width="{TILE_PX}" alt="{t.label}" /></a>'
+            f'</summary><sub>{notes}</sub></details></td>'
+        )
+    rows = ["<tr>\n" + "\n".join(cells[i:i + COLS]) + "\n</tr>"
+            for i in range(0, len(cells), COLS)]
+    return "<table>\n" + "\n".join(rows) + "\n</table>"
+
+
+def patch_readme() -> None:
+    path = ROOT / "README.md"
+    text = path.read_text(encoding="utf-8")
+    m = re.search(r"(<!--techstack-->\n).*?(<!--/techstack-->)", text, re.S)
+    if not m:
+        raise SystemExit("README.md has no <!--techstack--> block")
+    text = text[:m.end(1)] + techstack_html() + "\n" + text[m.start(2):]
+    path.write_text(text, encoding="utf-8")
+    print("patched README.md tech stack")
 
 
 def main() -> None:
     ASSETS.mkdir(exist_ok=True)
     for name, svg in (("banner.svg", banner()),
                       ("divider.svg", divider()),
-                      ("signoff.svg", signoff()),
-                      ("techstack.svg", techstack())):
+                      ("signoff.svg", signoff())):
         (ASSETS / name).write_text(svg, encoding="utf-8")
         print(f"wrote assets/{name}")
+
+    tech_dir = ASSETS / "tech"
+    tech_dir.mkdir(exist_ok=True)
+    for old in tech_dir.glob("*.svg"):
+        old.unlink()
+    for t in TECH:
+        (tech_dir / f"{t.key}.svg").write_text(tile(t), encoding="utf-8")
+    print(f"wrote {len(TECH)} tiles to assets/tech/")
+    patch_readme()
 
 
 if __name__ == "__main__":
