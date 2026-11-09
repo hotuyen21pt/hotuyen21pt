@@ -1,44 +1,33 @@
 <div align="center">
 
-<a name="portrait"><img src="assets/portrait.svg" width="440" alt="Tuyen Ho Nguyen - dot-matrix portrait" /></a>
+<a name="portrait"><img src="assets/portrait.svg" width="420" alt="Dot-matrix portrait under a mortarboard" /></a>
 
-<img src="assets/banner.svg" width="100%" alt="Tuyen Ho Nguyen — NLP Research · Multimodal AI · ML Engineering" />
+<a name="banner"><img src="assets/banner.svg" width="100%" alt="Tuyen Ho Nguyen — NLP Research · Multimodal AI · ML Engineering" /></a>
 
-<br/>
-
-<a href="https://github.com/hotuyen21pt?tab=repositories"><img src="https://img.shields.io/badge/Repositories-24-36BCF7?style=for-the-badge&logo=github&logoColor=white" alt="repos" /></a>
-<a href="mailto:tuyennh2102@gmail.com"><img src="https://img.shields.io/badge/Email-tuyennh2102%40gmail.com-D14836?style=for-the-badge&logo=gmail&logoColor=white" alt="email" /></a>
-
-<img src="assets/divider.svg" width="100%" alt="" />
+<a href="https://github.com/hotuyen21pt?tab=repositories"><img src="assets/contact/github.svg" height="36" alt="GitHub: @hotuyen21pt" /></a>&nbsp;&nbsp;<a href="mailto:tuyennh2102@gmail.com"><img src="assets/contact/email.svg" height="36" alt="Email: tuyennh2102@gmail.com" /></a>
 
 </div>
 
-## 👋 About me
+<br/>
+
+<a name="about"><img src="assets/sections/about.svg" width="100%" alt="01 — About me" /></a>
 
 I build **NLP and multimodal AI systems end to end** — from reading the paper, to a faithful
 implementation with tests, to a Docker image someone else can actually run.
+*Faithful to the paper first. Optimised second. Always reproducible.*
 
-```python
-class TuyenHoNguyen:
-    focus       = ["Aspect-Based Sentiment Analysis", "Medical VQA", "LLM fine-tuning"]
-    methods     = ["LoRA / PEFT", "Knowledge Distillation", "GRPO", "Multi-task learning"]
-    ships_with  = ["pytest", "Docker", "FastAPI", "Kaggle-reproducible notebooks"]
-    principle   = "Faithful to the paper first. Optimised second. Always reproducible."
-```
+<a name="track"><img src="assets/track.svg" width="100%" alt="Track record: public repositories, 3 paper reproductions, 275+ tests passing, 1.95M reviews analysed" /></a>
 
-- 🔬 **Research** — Aspect Sentiment Quad Prediction (ASQP) on Vietnamese & multilingual hotel reviews,
-  and evidence-grounded Visual Question Answering on chest X-rays.
-- 🧪 **Reproductions that hold up** — ACL/NAACL baselines rebuilt line-by-line against the paper,
+- **Reproductions that hold up** — ACL/NAACL baselines rebuilt line by line against the paper,
   with the deliberate deviations documented so nobody silently "optimises" them away.
-- 🛠️ **Not just notebooks** — most projects ship a FastAPI/Gradio service, a React UI, a Dockerfile
-  and a test suite. Research code that runs on a stranger's machine.
-- 🧭 **Vietnamese-first NLP** — ABSA, OCR and clause segmentation tuned for Vietnamese text.
+- **Not just notebooks** — most projects ship a FastAPI/Gradio service, a React UI, a Dockerfile
+  and a test suite: research code that runs on a stranger's machine.
 
-<div align="center"><img src="assets/divider.svg" width="100%" alt="" /></div>
+<a name="focus"><img src="assets/focus.svg" width="100%" alt="Research focus: Aspect Sentiment Quad Prediction; Multilingual and Vietnamese NLP; Multimodal Medical AI; Evaluation that means something" /></a>
 
-## 🧰 Technology arsenal
+<br/>
 
-<sub>Click a row to open what each tool is used for, and where.</sub>
+<a name="stack"><img src="assets/sections/stack.svg" width="100%" alt="02 — Technology arsenal" /></a>
 
 <!--techstack-->
 <details>
@@ -66,14 +55,9 @@ class TuyenHoNguyen:
 </details>
 <!--/techstack-->
 
-<table>
-<tr><td><b>Profile focus</b></td><td>Aspect sentiment quad prediction · Medical VQA · LLM fine-tuning · Vietnamese NLP</td></tr>
-<tr><td><b>Track record</b></td><td><!--repos-->24<!--/repos--> repositories · 3 paper reproductions · 275+ tests · 1.95M reviews analysed</td></tr>
-</table>
+<br/>
 
-<div align="center"><img src="assets/divider.svg" width="100%" alt="" /></div>
-
-## 🚀 Featured Work
+<a name="work"><img src="assets/sections/work.svg" width="100%" alt="03 — Featured work" /></a>
 
 <!--projects-->
 <p align="center">
@@ -87,15 +71,14 @@ class TuyenHoNguyen:
 </p>
 <!--/projects-->
 
-<sub>Also in the S2IT card: <a href="https://github.com/hotuyen21pt/tree">Tree-CoT-RT → hotuyen21pt/tree</a></sub>
-
 <details>
-<summary><b>🗂️ More projects</b></summary>
+<summary><b>More projects</b></summary>
 
 <br/>
 
 | Project | What it is | Stack |
 |---|---|---|
+| [tree](https://github.com/hotuyen21pt/tree) | **Tree-CoT-RT** (ACL 2026) — the second baseline in the S2IT card: reasoning trees, tSFT, then GRPO with a rule-based reward | `GRPO` · `LoRA` |
 | [Split_Sentence](https://github.com/hotuyen21pt/Split_Sentence) | **UOS segmentation** — splits reviews into "one opinion, one target" units with Qwen3-8B via Ollama; streaming pipeline with gold-case validation and token-recall metrics | `Qwen3` · `Ollama` · `Python` |
 | [work_reminder](https://github.com/hotuyen21pt/work_reminder) | Telegram work-reminder bot, written in idiomatic Go with a clean `cmd/internal` layout | `Go` · `Telegram API` |
 | [Automatic-Labelling-Engine-with-LLM](https://github.com/hotuyen21pt/Automatic-Labelling-Engine-with-LLM) | LLM-driven automatic annotation engine for ABSA datasets | `LLM` · `Jupyter` |
@@ -105,49 +88,24 @@ class TuyenHoNguyen:
 
 </details>
 
-<div align="center"><img src="assets/divider.svg" width="100%" alt="" /></div>
+<br/>
 
-## 📊 Telemetry
+<a name="telemetry"><img src="assets/sections/telemetry.svg" width="100%" alt="04 — Telemetry" /></a>
 
 <div align="center">
 
-<img src="assets/contribution-jet.svg" alt="contribution activity for the last 12 months" width="100%" />
+<a name="contributions"><img src="assets/contribution-jet.svg" width="100%" alt="Contribution activity for the last 12 months" /></a>
 
-<br/>
-
-<img src="assets/stats.svg" alt="overview" />
-<img src="assets/top-langs.svg" alt="most used languages" />
-
-<br/>
-
-<sub>All three cards are rendered by <a href="scripts/gen_stats.py"><code>scripts/gen_stats.py</code></a> straight from the
-GitHub API and committed to this repo — nothing here is served by a third party that can go down.</sub>
+<a name="overview"><img src="assets/stats.svg" width="49%" alt="Overview" /></a>&nbsp;<a name="languages"><img src="assets/top-langs.svg" width="49%" alt="Most used languages" /></a>
 
 </div>
 
-<div align="center"><img src="assets/divider.svg" width="100%" alt="" /></div>
-
-## 🧪 Research Interests
-
-<div align="center">
-
-| Area | What I'm after |
-|---|---|
-| **Aspect Sentiment Quad Prediction** | Implicit aspects & opinions, syntax-aware supervision, reasoning-tree CoT |
-| **Multilingual / Vietnamese NLP** | Cross-lingual transfer for low-resource ABSA, clause-level opinion units |
-| **Multimodal Medical AI** | Grounded answers with bounding-box evidence, hallucination-resistant generation |
-| **Evaluation that means something** | Data audits before benchmarks, permutation tests, documented deviations |
-
-</div>
-
-<div align="center">
-
-<img src="assets/divider.svg" width="100%" alt="" />
-
-> *"Faithfulness to the paper matters more than peak F1 — until you can prove otherwise."*
-
 <br/>
 
-<img src="assets/signoff.svg" alt="Tuyen Ho Nguyen" width="560" />
+<div align="center">
+
+*"Faithfulness to the paper matters more than peak F1 — until you can prove otherwise."*
+
+<a name="signoff"><img src="assets/signoff.svg" width="560" alt="Signed, Tuyen Ho Nguyen" /></a>
 
 </div>

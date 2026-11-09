@@ -1,9 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="400" height="314" viewBox="0 0 400 314" role="img" aria-label="S2IT · Tree-CoT-RT: Two ASQP baselines, rebuilt faithfully">
   <defs>
     <linearGradient id="rim" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" style="stop-color:#EF4444"/>
-      <stop offset="50%" style="stop-color:#EF4444;stop-opacity:.2"/>
-      <stop offset="100%" style="stop-color:#EF4444"/>
+      <stop offset="0%" style="stop-color:#0EA5E9"/>
+      <stop offset="50%" style="stop-color:#0EA5E9;stop-opacity:.2"/>
+      <stop offset="100%" style="stop-color:#0EA5E9"/>
       <animateTransform attributeName="gradientTransform" type="rotate" from="0 .5 .5" to="360 .5 .5" dur="9s" repeatCount="indefinite"/>
     </linearGradient>
     <linearGradient id="glare" x1="0" y1="0" x2="1" y2="0">
@@ -40,28 +40,28 @@
   <g class="card">
     <rect x="1" y="1" width="398" height="312" rx="14" fill="var(--card)" stroke="url(#rim)" stroke-width="2"/>
     <g clip-path="url(#clip)">
-      <rect width="400" height="5" fill="#EF4444"/>
-      <rect width="400" height="88" fill="#EF4444" fill-opacity=".06"/>
+      <rect width="400" height="5" fill="#0EA5E9"/>
+      <rect width="400" height="88" fill="#0EA5E9" fill-opacity=".06"/>
       <g class="sheen"><rect width="90" height="314" fill="url(#glare)" transform="skewX(-20)"/></g>
     </g>
-    <rect x="18" y="20" width="36" height="36" rx="9" fill="#EF4444"/>
+    <rect x="18" y="20" width="36" height="36" rx="9" fill="#0EA5E9"/>
     <text x="36" y="42.5" text-anchor="middle" style="font:800 13px 'Segoe UI',Ubuntu,-apple-system,sans-serif" fill="#FFFFFF">S2</text>
-    <text x="66" y="30" style="font:700 8.5px 'JetBrains Mono','Cascadia Code',Consolas,monospace;letter-spacing:1.6px" fill="#EF4444">PAPER REPRODUCTIONS</text>
+    <text x="66" y="30" style="font:700 8.5px 'JetBrains Mono','Cascadia Code',Consolas,monospace;letter-spacing:1.6px" fill="#0EA5E9">PAPER REPRODUCTIONS</text>
     <text x="66" y="50" style="font:700 17px 'Segoe UI',Ubuntu,-apple-system,sans-serif" fill="var(--ink)">S2IT · Tree-CoT-RT</text>
-    <circle class="pulse" cx="378" cy="26" r="3.5" fill="#EF4444"/>
+    <circle class="pulse" cx="378" cy="26" r="3.5" fill="#0EA5E9"/>
     <text x="18" y="78" style="font:600 11.5px 'Segoe UI',Ubuntu,-apple-system,sans-serif" fill="var(--dim)">Two ASQP baselines, rebuilt faithfully</text>
-    <g class="pop" style="animation-delay:0.35s"><rect x="18.0" y="92" width="116.0" height="54" rx="9" fill="#EF4444" fill-opacity=".09" stroke="#EF4444" stroke-opacity=".35"/><text x="30.0" y="118" style="font:800 18px 'Segoe UI',Ubuntu,-apple-system,sans-serif" fill="#EF4444">NAACL &#x27;25</text><text x="30.0" y="136" style="font:500 9.5px 'Segoe UI',Ubuntu,-apple-system,sans-serif" fill="var(--dim)">S2IT</text></g>
-    <g class="pop" style="animation-delay:0.45s"><rect x="142.0" y="92" width="116.0" height="54" rx="9" fill="#EF4444" fill-opacity=".09" stroke="#EF4444" stroke-opacity=".35"/><text x="154.0" y="118" style="font:800 18px 'Segoe UI',Ubuntu,-apple-system,sans-serif" fill="#EF4444">ACL &#x27;26</text><text x="154.0" y="136" style="font:500 9.5px 'Segoe UI',Ubuntu,-apple-system,sans-serif" fill="var(--dim)">Tree-CoT-RT</text></g>
-    <g class="pop" style="animation-delay:0.55s"><rect x="266.0" y="92" width="116.0" height="54" rx="9" fill="#EF4444" fill-opacity=".09" stroke="#EF4444" stroke-opacity=".35"/><text x="278.0" y="118" style="font:800 18px 'Segoe UI',Ubuntu,-apple-system,sans-serif" fill="#EF4444">95</text><text x="278.0" y="136" style="font:500 9.5px 'Segoe UI',Ubuntu,-apple-system,sans-serif" fill="var(--dim)">tests</text></g>
+    <g class="pop" style="animation-delay:0.35s"><rect x="18.0" y="92" width="116.0" height="54" rx="9" fill="#0EA5E9" fill-opacity=".09" stroke="#0EA5E9" stroke-opacity=".35"/><text x="30.0" y="118" style="font:800 18px 'Segoe UI',Ubuntu,-apple-system,sans-serif" fill="#0EA5E9">NAACL &#x27;25</text><text x="30.0" y="136" style="font:500 9.5px 'Segoe UI',Ubuntu,-apple-system,sans-serif" fill="var(--dim)">S2IT</text></g>
+    <g class="pop" style="animation-delay:0.45s"><rect x="142.0" y="92" width="116.0" height="54" rx="9" fill="#0EA5E9" fill-opacity=".09" stroke="#0EA5E9" stroke-opacity=".35"/><text x="154.0" y="118" style="font:800 18px 'Segoe UI',Ubuntu,-apple-system,sans-serif" fill="#0EA5E9">ACL &#x27;26</text><text x="154.0" y="136" style="font:500 9.5px 'Segoe UI',Ubuntu,-apple-system,sans-serif" fill="var(--dim)">Tree-CoT-RT</text></g>
+    <g class="pop" style="animation-delay:0.55s"><rect x="266.0" y="92" width="116.0" height="54" rx="9" fill="#0EA5E9" fill-opacity=".09" stroke="#0EA5E9" stroke-opacity=".35"/><text x="278.0" y="118" style="font:800 18px 'Segoe UI',Ubuntu,-apple-system,sans-serif" fill="#0EA5E9">95</text><text x="278.0" y="136" style="font:500 9.5px 'Segoe UI',Ubuntu,-apple-system,sans-serif" fill="var(--dim)">tests</text></g>
     <text x="18" y="172" style="font:400 11.5px 'Segoe UI',Ubuntu,-apple-system,sans-serif" fill="var(--tx)">S2IT: three-stage syntax-guided tuning on one LoRA adapter with</text>
     <text x="18" y="188" style="font:400 11.5px 'Segoe UI',Ubuntu,-apple-system,sans-serif" fill="var(--tx)">dependency-graph supervision. Tree-CoT-RT: type-specific</text>
     <text x="18" y="204" style="font:400 11.5px 'Segoe UI',Ubuntu,-apple-system,sans-serif" fill="var(--tx)">reasoning trees, tSFT, then GRPO with a rule-based reward and</text>
     <text x="18" y="220" style="font:400 11.5px 'Segoe UI',Ubuntu,-apple-system,sans-serif" fill="var(--tx)">self-consistent voting.</text>
-    <rect x="18.0" y="238" width="43" height="20" rx="10" fill="var(--chip)" stroke="#EF4444" stroke-opacity=".5"/><text x="28.0" y="251.5" style="font:500 9.5px 'JetBrains Mono','Cascadia Code',Consolas,monospace" fill="var(--ink)">GRPO</text>
-    <rect x="67.0" y="238" width="54" height="20" rx="10" fill="var(--chip)" stroke="#EF4444" stroke-opacity=".5"/><text x="77.0" y="251.5" style="font:500 9.5px 'JetBrains Mono','Cascadia Code',Consolas,monospace" fill="var(--ink)">Stanza</text>
-    <rect x="127.5" y="238" width="43" height="20" rx="10" fill="var(--chip)" stroke="#EF4444" stroke-opacity=".5"/><text x="137.5" y="251.5" style="font:500 9.5px 'JetBrains Mono','Cascadia Code',Consolas,monospace" fill="var(--ink)">LoRA</text>
+    <rect x="18.0" y="238" width="43" height="20" rx="10" fill="var(--chip)" stroke="#0EA5E9" stroke-opacity=".5"/><text x="28.0" y="251.5" style="font:500 9.5px 'JetBrains Mono','Cascadia Code',Consolas,monospace" fill="var(--ink)">GRPO</text>
+    <rect x="67.0" y="238" width="54" height="20" rx="10" fill="var(--chip)" stroke="#0EA5E9" stroke-opacity=".5"/><text x="77.0" y="251.5" style="font:500 9.5px 'JetBrains Mono','Cascadia Code',Consolas,monospace" fill="var(--ink)">Stanza</text>
+    <rect x="127.5" y="238" width="43" height="20" rx="10" fill="var(--chip)" stroke="#0EA5E9" stroke-opacity=".5"/><text x="137.5" y="251.5" style="font:500 9.5px 'JetBrains Mono','Cascadia Code',Consolas,monospace" fill="var(--ink)">LoRA</text>
     <line x1="18" y1="272" x2="382" y2="272" stroke="var(--line)"/>
     <text x="18" y="294" style="font:500 10px 'JetBrains Mono','Cascadia Code',Consolas,monospace" fill="var(--dim)">hotuyen21pt/s2it  ·  /tree</text>
-    <g class="nudge"><text x="382" y="294" text-anchor="end" style="font:700 10.5px 'Segoe UI',Ubuntu,-apple-system,sans-serif" fill="#EF4444">View repo →</text></g>
+    <g class="nudge"><text x="382" y="294" text-anchor="end" style="font:700 10.5px 'Segoe UI',Ubuntu,-apple-system,sans-serif" fill="#0EA5E9">View repo →</text></g>
   </g>
 </svg>

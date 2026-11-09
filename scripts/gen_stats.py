@@ -44,8 +44,10 @@ FIXTURE = "--fixture" in sys.argv
 ASSETS = ROOT / ("preview" if FIXTURE else "assets")
 
 # Vendored or generated output rather than code I wrote; counting it would make
-# the card claim a language I don't work in.
-EXCLUDE_LANGS = {"Mako", "Batchfile", "Makefile"}
+# the card claim a language I don't work in. Notebooks, HTML, CSS and TeX are
+# excluded too: notebook JSON and exported reports are bulky, so by bytes they
+# dwarf the Python, Go and TypeScript the tech stack is actually built on.
+EXCLUDE_LANGS = {"Mako", "Batchfile", "Makefile", "Jupyter Notebook", "HTML", "CSS", "TeX"}
 
 LANG_COLORS = {
     "Python": "#3572A5",
@@ -343,13 +345,20 @@ def window(width: int, height: int, title: str, command: str, body: str, extra_c
 
 # ------------------------------------------------------------------ the cards
 
-def stats_card(d: dict) -> str:
+STATS_MIN_H = 62 + 5 * 25 + 4 + 42     # five rows, the footer line and the caret
+
+
+def stats_card(d: dict, height: int) -> str:
+    """Overview card, drawn at `height` so it pairs with the languages card.
+
+    Stars, forks and followers are left out on purpose: on a research profile
+    they are small numbers that say little about the work.
+    """
+    top = next(iter(d["langs"]), "-")
     rows = [
         ("public repos",   str(d["repos"])),
-        ("stars earned",   str(d["stars"])),
-        ("forks",          str(d["forks"])),
-        ("followers",      str(d["followers"])),
         ("languages",      str(len(d["langs"]))),
+        ("top language",   top),
         ("code on github", f"{d['kb'] / 1024:.0f} MB"),
         ("member since",   f"{d['since']} - {d['years']}y"),
     ]
@@ -366,10 +375,10 @@ def stats_card(d: dict) -> str:
             f'stroke="var(--bd)" stroke-width="1" stroke-dasharray="1 4"/>'
             f'<text x="{w - 24}" y="{y}" class="mono v" text-anchor="end">{esc(val)}</text></g>'
         )
-    foot = 62 + len(rows) * 25 + 4
+    foot = height - 42
     out.append(f'    <text x="24" y="{foot}" class="s"># regenerated daily - no third-party service</text>')
     out.append(f'    <rect class="blink" x="24" y="{foot + 12}" width="8" height="14" fill="var(--ac)"/>')
-    return window(w, foot + 42, "Overview", f"~/{USER} $ gh stats --me", "\n".join(out))
+    return window(w, height, "Overview", f"~/{USER} $ gh stats --me", "\n".join(out))
 
 
 # One row per language, each element in its own x-band. A two-column legend
@@ -397,7 +406,12 @@ def _check_bands() -> None:
     assert value_start - (ROW_TRACK + ROW_TRACK_W) >= 8, "track overruns the percentage column"
 
 
-def langs_card(d: dict, top: int = 8) -> str:
+def langs_height(n: int) -> int:
+    """Height of the languages card for n rows (bar at 58, rows from 104)."""
+    return 58 + 46 + (n - 1) * 25 + 26
+
+
+def langs_card(d: dict, height: int, top: int = 8) -> str:
     _check_bands()
     items = list(d["langs"].items())[:top]
     total = sum(v for _, v in items) or 1
@@ -447,7 +461,6 @@ def langs_card(d: dict, top: int = 8) -> str:
             f'{100.0 * count / total:.1f}%</text></g>'
         )
 
-    height = row_y + (len(items) - 1) * step + 26
     return window(w, height, "Most used languages", f"~/{USER} $ gh loadout --languages",
                   bar + "\n" + "\n".join(rows), css)
 
@@ -560,30 +573,59 @@ def jet_card(cal: dict) -> str:
                   f"~/{USER} $ gh contributions --last 12mo --render jet", body, css)
 
 
-# -------------------------------------------------------------- README patch
+# ------------------------------------------------------------- track record
 
-def patch_readme(repos: int) -> None:
-    """Keep the repository count current in the badge and the Track record row.
+# Facts about the work rather than the account, edited by hand when they change:
+# paper reproductions (CXR-VQA, S2IT, Tree-CoT-RT), tests (180 EvidenceKD + 95
+# ASQP baselines) and PRISM's review corpus. Only the repository count is live.
+TRACK_STATIC = [("3", "paper reproductions"), ("275+", "tests passing"),
+                ("1.95M", "reviews analysed")]
 
-    The rest of that row (reproductions, tests, reviews) describes the work and
-    is edited by hand; stars and contributions live in the Telemetry cards.
-    """
-    path = ROOT / "README.md"
-    text = path.read_text(encoding="utf-8")
-    patched = re.sub(r"(badge/Repositories-)\d+", rf"\g<1>{repos}", text)
-    patched = re.sub(r"(<!--repos-->)[\d,]+(<!--/repos-->)", rf"\g<1>{repos}\g<2>", patched)
-    if patched != text:
-        path.write_text(patched, encoding="utf-8")
-        print(f"  README.md repository count -> {repos}")
+
+def track_card(repos: int) -> str:
+    """Four headline numbers in the project cards' metric-box style."""
+    items = [(str(repos), "public repositories")] + TRACK_STATIC
+    w, h, gap = 830, 78, 12
+    bw = (w - 2 - gap * (len(items) - 1)) / len(items)
+    accents = ["var(--ac)", "var(--hi)"]
+    boxes = []
+    for i, (val, label) in enumerate(items):
+        x = 1 + i * (bw + gap)
+        acc = accents[i % len(accents)]
+        boxes.append(
+            f'  <g class="pop" style="animation-delay:{0.1 + i * 0.1:.2f}s">'
+            f'<rect x="{x:.1f}" y="1" width="{bw:.1f}" height="{h - 2}" rx="12" fill="var(--panel)" '
+            f'stroke="var(--bd)"/>'
+            f'<rect x="{x:.1f}" y="14" width="3" height="{h - 28}" rx="1.5" fill="{acc}"/>'
+            f'<text x="{x + 20:.1f}" y="41" class="num" fill="{acc}">{esc(val)}</text>'
+            f'<text x="{x + 20:.1f}" y="60" class="lbl">{esc(label)}</text></g>'
+        )
+    css = """
+    .num { font: 800 24px 'Segoe UI',Ubuntu,-apple-system,sans-serif }
+    .lbl { font: 500 10.5px 'JetBrains Mono','Cascadia Code',Consolas,monospace; fill: var(--mu); letter-spacing: .4px }
+    .pop { opacity:0; animation: pop .55s cubic-bezier(.22,1,.36,1) both }
+    @keyframes pop { from { opacity:0; transform: translateY(6px) } to { opacity:1; transform:none } }
+    @media (prefers-reduced-motion: reduce) { .pop { animation: none; opacity: 1 } }
+"""
+    label = " · ".join(f"{v} {l}" for v, l in items)
+    return (f'<svg xmlns="http://www.w3.org/2000/svg" width="{w}" height="{h}" viewBox="0 0 {w} {h}" '
+            f'role="img" aria-label="{esc(label)}">\n'
+            f'  <style>{THEME}{css}  </style>\n' + "\n".join(boxes) + "\n</svg>\n")
 
 
 def main() -> None:
     ASSETS.mkdir(exist_ok=True)
     data = fixture_stats() if FIXTURE else collect()
+    # Filter here as well as in collect(), so fixture renders match real ones.
+    data["langs"] = {k: v for k, v in data["langs"].items() if k not in EXCLUDE_LANGS}
     out = ASSETS.name
-    (ASSETS / "stats.svg").write_text(stats_card(data), encoding="utf-8")
-    (ASSETS / "top-langs.svg").write_text(langs_card(data), encoding="utf-8")
-    print(f"wrote {out}/stats.svg and {out}/top-langs.svg")
+    # The overview and languages cards sit side by side, so both share the
+    # languages card's height.
+    pair_h = max(langs_height(min(8, len(data["langs"]))), STATS_MIN_H)
+    (ASSETS / "stats.svg").write_text(stats_card(data, pair_h), encoding="utf-8")
+    (ASSETS / "top-langs.svg").write_text(langs_card(data, pair_h), encoding="utf-8")
+    (ASSETS / "track.svg").write_text(track_card(data["repos"]), encoding="utf-8")
+    print(f"wrote {out}/stats.svg, {out}/top-langs.svg and {out}/track.svg")
 
     jet = ASSETS / "contribution-jet.svg"
     if FIXTURE:
@@ -602,9 +644,6 @@ def main() -> None:
         # after the other cards are written, so a calendar outage never costs
         # us the stats refresh too.
         missing = True
-
-    if not FIXTURE:
-        patch_readme(data["repos"])
 
     for name, count in list(data["langs"].items())[:8]:
         print(f"  {name:<18} {count:>10,} bytes")

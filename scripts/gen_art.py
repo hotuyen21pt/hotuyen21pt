@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Render the static profile artwork: banner, divider and sign-off.
+"""Render the static profile artwork: header, section titles, cards and sign-off.
 
 Unlike gen_stats.py these carry no live data, so they are generated once and
 committed rather than refreshed by the daily workflow. They live in a script
@@ -9,10 +9,11 @@ banners end up with the caret floating in empty space.
 
     python scripts/gen_art.py
 
-Writes assets/banner.svg, assets/divider.svg, assets/signoff.svg, a strip and a
-panel per tech-stack group under assets/tech/, and the matching <details>
-blocks in README.md between the <!--techstack--> markers, plus one card per
-featured project under assets/projects/ and the <!--projects--> block.
+Writes, under assets/: banner, portrait, contact pills, section titles, the
+focus cards, the tech-stack strips and panels, the project cards and the
+sign-off; and patches the <!--techstack--> and <!--projects--> blocks in
+README.md. The live cards (stats, languages, contributions, track record)
+come from gen_stats.py instead.
 Every file carries a light and a dark palette; GitHub renders whichever the
 reader's theme asks for.
 """
@@ -255,34 +256,6 @@ def banner() -> str:
     <rect x="0" y="{H - 3}" width="{W}" height="3" fill="url(#rule)" class="pulse"/>
   </g>
   <rect x="0.5" y="0.5" width="{W - 1}" height="{H - 1}" rx="16" fill="none" stroke="var(--bd)"/>
-</svg>
-"""
-
-
-def divider() -> str:
-    """A scanline with a bright round travelling along it."""
-    return """<svg xmlns="http://www.w3.org/2000/svg" width="900" height="8" viewBox="0 0 900 8" role="presentation">
-  <defs>
-    <linearGradient id="g" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="#36BCF7" stop-opacity="0"/>
-      <stop offset="25%" stop-color="#36BCF7" stop-opacity="0.85"/>
-      <stop offset="55%" stop-color="#7C4DFF" stop-opacity="0.85"/>
-      <stop offset="100%" stop-color="#36BCF7" stop-opacity="0"/>
-      <animate attributeName="x1" values="-0.6;0.6;-0.6" dur="9s" repeatCount="indefinite"/>
-      <animate attributeName="x2" values="0.4;1.6;0.4" dur="9s" repeatCount="indefinite"/>
-    </linearGradient>
-    <radialGradient id="blip">
-      <stop offset="0%" stop-color="#9FE8FF" stop-opacity="1"/>
-      <stop offset="100%" stop-color="#36BCF7" stop-opacity="0"/>
-    </radialGradient>
-  </defs>
-  <style>
-    .blip { animation: run 6s cubic-bezier(.45,0,.55,1) infinite }
-    @keyframes run { 0% { transform: translateX(-30px) } 100% { transform: translateX(930px) } }
-    @media (prefers-reduced-motion: reduce) { .blip { display: none } }
-  </style>
-  <rect y="3" width="900" height="2" rx="1" fill="url(#g)"/>
-  <circle class="blip" cx="0" cy="4" r="7" fill="url(#blip)"/>
 </svg>
 """
 
@@ -722,23 +695,30 @@ PORTRAIT = json.loads((pathlib.Path(__file__).resolve().parent / "portrait.json"
 DOT = 7.2               # grid pitch
 CARD_X, CARD_Y = 30, 62
 LOOP = 8           # seconds per draw-hold-fade cycle of the portrait
-SPARK_COLORS = ["#36BCF7", "#7C4DFF", "#2EE6A6", "#FFFFFF"]
+SPARK_COLORS = ["#36BCF7", "#7C4DFF", "#2EE6A6", "var(--spk)"]
 
 
 # The portrait is drawn in one blue ramp rather than the picture's own colours,
-# so it reads as a rendering of the avatar, not a copy of it. Stops run from
-# the subject's darkest tone to its brightest.
-BLUE_RAMP = ["#1E3A8A", "#1D4ED8", "#3B82F6", "#60A5FA", "#BAE6FD"]
-INK_BLUE = "#E0F2FE"    # outlines (glasses, eyes): brightest, so they stay legible
+# so it reads as a rendering of the avatar, not a copy of it. Tones are bucketed
+# into LEVELS classes whose colours come from CSS, so the same dots can follow
+# the reader's theme: on dark the prominent tones are the light blues, on light
+# they are the deep ones - visual weight lands in the same places either way.
+LEVELS = 8
+RAMP_DARK = ["#1E3A8A", "#1D4ED8", "#3B82F6", "#60A5FA", "#BAE6FD"]
+RAMP_LIGHT = ["#BFDBFE", "#93C5FD", "#3B82F6", "#1D4ED8", "#1E3A8A"]
 
 
-def _ramp(t: float) -> str:
-    t = max(0.0, min(1.0, t)) * (len(BLUE_RAMP) - 1)
-    i = min(int(t), len(BLUE_RAMP) - 2)
+def _ramp(stops: list, t: float) -> str:
+    t = max(0.0, min(1.0, t)) * (len(stops) - 1)
+    i = min(int(t), len(stops) - 2)
     f = t - i
-    a, b = BLUE_RAMP[i], BLUE_RAMP[i + 1]
+    a, b = stops[i], stops[i + 1]
     mix = (round(int(a[k:k + 2], 16) * (1 - f) + int(b[k:k + 2], 16) * f) for k in (1, 3, 5))
     return "#" + "".join(f"{v:02X}" for v in mix)
+
+
+def _level_css(stops: list) -> str:
+    return " ".join(f"--q{i}:{_ramp(stops, i / (LEVELS - 1))};" for i in range(LEVELS))
 
 
 def _luma_sat(hx: str) -> tuple[float, float]:
@@ -761,7 +741,7 @@ def _sparkle(x: float, y: float, s: float) -> str:
 
 
 def portrait() -> str:
-    """The picture redrawn as a dot matrix on a dark panel, under a mortarboard.
+    """The picture redrawn as a dot matrix on a panel, under a mortarboard.
 
     Bright, colourless cells are the picture's background: they stay as faint
     dots so the subject stands out. Rows fade in top to bottom, then a scan
@@ -775,8 +755,7 @@ def portrait() -> str:
     gy = CARD_Y + 36
     W = int(card_w + 2 * CARD_X)
     cx = W / 2
-    name_y = CARD_Y + card_h + 52
-    H = int(name_y + 34)
+    H = int(CARD_Y + card_h + 8)
 
     # Stretch the ramp over the subject's own tonal range (5th-95th
     # percentile), otherwise a mostly mid-tone picture lands on one blue.
@@ -792,15 +771,16 @@ def portrait() -> str:
             luma, sat = _luma_sat(hx)
             x, y = gx + c * DOT, gy + r * DOT
             if _is_background(luma, sat):
-                dots.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="1.5" fill="#93C5FD" fill-opacity=".14"/>')
+                dots.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="1.5" class="bg"/>')
             elif luma < 40:                          # ink lines, pupils, nose
-                dots.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="2.5" fill="{INK_BLUE}"/>')
+                dots.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="2.5" class="ink"/>')
             else:
                 # Halftone: brighter cells get bigger and lighter dots, which
                 # is what gives a flat fill its shading.
                 t = (luma - lo) / max(1, hi - lo)
                 rad = 1.5 + 1.4 * max(0.0, min(1.0, t))
-                dots.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="{rad:.2f}" fill="{_ramp(t)}"/>')
+                q = round(max(0.0, min(1.0, t)) * (LEVELS - 1))
+                dots.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="{rad:.2f}" class="q{q}"/>')
         row_groups.append(f'<g class="rw" style="animation-delay:{0.2 + r * 0.028:.3f}s">{"".join(dots)}</g>')
 
     rng = random.Random(7)
@@ -819,9 +799,9 @@ def portrait() -> str:
     # Mortarboard straddling the panel's top edge, drawn around (cx, 0).
     cap = f"""<g transform="translate({cx:.1f},14)">
     <g class="cap">
-      <path d="M-44,40 L-44,62 Q0,82 44,62 L44,40 Z" fill="#1A2233"/>
+      <path d="M-44,40 L-44,62 Q0,82 44,62 L44,40 Z" fill="var(--capb)"/>
       <path d="M-44,62 Q0,82 44,62" fill="none" stroke="url(#capBand)" stroke-width="4" stroke-linecap="round"/>
-      <path d="M-72,26 L0,0 L72,26 L0,52 Z" fill="#141C2B" stroke="#5B9BF8" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M-72,26 L0,0 L72,26 L0,52 Z" fill="var(--capf)" stroke="#5B9BF8" stroke-width="3" stroke-linejoin="round"/>
       <circle cx="0" cy="26" r="3.2" fill="#5B9BF8"/>
       <g class="tassel">
         <path d="M0,26 L66,28 L66,58" fill="none" stroke="#2EE6A6" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
@@ -849,8 +829,15 @@ def portrait() -> str:
     <clipPath id="panel"><rect x="{CARD_X + 8}" y="{CARD_Y + 8}" width="{card_w - 16}" height="{card_h - 16}" rx="16"/></clipPath>
   </defs>
   <style>
-    svg {{ --ink:#1F2328; --dim:#57606A }}
-    @media (prefers-color-scheme: dark) {{ svg {{ --ink:#F0F6FC; --dim:#8B949E }} }}
+    svg {{ --frame:#E6EDF6; --panel:#FFFFFF; --capf:#FFFFFF; --capb:#E3EAF5; --spk:#64748B;
+           --ink:#0F1E3D; --bgd:#1D4ED8; --bgo:.10; {_level_css(RAMP_LIGHT)} }}
+    @media (prefers-color-scheme: dark) {{
+      svg {{ --frame:#0A0E15; --panel:#0D1117; --capf:#141C2B; --capb:#1A2233; --spk:#FFFFFF;
+             --ink:#E0F2FE; --bgd:#93C5FD; --bgo:.14; {_level_css(RAMP_DARK)} }}
+    }}
+    .bg  {{ fill: var(--bgd); fill-opacity: var(--bgo) }}
+    .ink {{ fill: var(--ink) }}
+    {" ".join(f".q{i} {{ fill: var(--q{i}) }}" for i in range(LEVELS))}
     /* One {LOOP}s loop: rows draw in top to bottom behind the scan band, hold,
        fade out in the same order, and the picture redraws. Each row keeps
        its delay on every pass, so the wave shape survives the repeat. */
@@ -863,7 +850,6 @@ def portrait() -> str:
     }}
     .scan {{ animation: scan {LOOP}s cubic-bezier(.45,0,.55,1) infinite }}
     @keyframes scan {{ 0% {{ transform: translateY(-90px) }} 26%,100% {{ transform: translateY({card_h + 40}px) }} }}
-    @keyframes rise {{ from {{ opacity:0; transform: translateY(-3px) }} to {{ opacity:1; transform:none }} }}
     .tw {{ transform-box: fill-box; transform-origin: center; animation: tw 3s ease-in-out infinite }}
     @keyframes tw {{ 0%,100% {{ opacity:.15; transform: scale(.55) rotate(0deg) }} 50% {{ opacity:1; transform: scale(1) rotate(45deg) }} }}
     .cap {{ transform-box: fill-box; transform-origin: center; animation: bob 4.5s ease-in-out infinite }}
@@ -871,27 +857,152 @@ def portrait() -> str:
     /* Pivot on the top-left of the tassel's box, which is the button it hangs from. */
     .tassel {{ transform-box: fill-box; transform-origin: 0 0; animation: swing 2.2s ease-in-out infinite }}
     @keyframes swing {{ 0%,100% {{ transform: rotate(-7deg) }} 50% {{ transform: rotate(9deg) }} }}
-    .nm {{ font: 800 32px 'Segoe UI',Ubuntu,-apple-system,sans-serif; fill: var(--ink); letter-spacing: .3px }}
-    .sb {{ font: 500 11px 'JetBrains Mono','Cascadia Code',Consolas,monospace; fill: var(--dim); letter-spacing: 2.4px }}
-    .fade {{ animation: rise .8s 1.6s cubic-bezier(.22,1,.36,1) both }}
     @media (prefers-reduced-motion: reduce) {{
-      .rw,.scan,.tw,.cap,.tassel,.fade {{ animation: none !important; opacity: 1 }} .scan {{ display: none }}
+      .rw,.scan,.tw,.cap,.tassel {{ animation: none !important; opacity: 1 }} .scan {{ display: none }}
     }}
   </style>
 
-  <rect x="{CARD_X}" y="{CARD_Y}" width="{card_w}" height="{card_h}" rx="22" fill="#0A0E15"/>
-  <rect x="{CARD_X + 8}" y="{CARD_Y + 8}" width="{card_w - 16}" height="{card_h - 16}" rx="16" fill="#0D1117" stroke="url(#rimP)" stroke-width="2"/>
+  <rect x="{CARD_X}" y="{CARD_Y}" width="{card_w}" height="{card_h}" rx="22" fill="var(--frame)"/>
+  <rect x="{CARD_X + 8}" y="{CARD_Y + 8}" width="{card_w - 16}" height="{card_h - 16}" rx="16" fill="var(--panel)" stroke="url(#rimP)" stroke-width="2"/>
   <g clip-path="url(#panel)">
     {chr(10).join(row_groups)}
     <rect class="scan" x="{CARD_X}" y="{CARD_Y - 60}" width="{card_w}" height="70" fill="url(#scan)"/>
   </g>
   {chr(10).join(sparks)}
   {cap}
+</svg>
+"""
 
-  <g class="fade">
-    <text x="{cx:.1f}" y="{name_y}" text-anchor="middle" class="nm">{NAME}</text>
-    <text x="{cx:.1f}" y="{name_y + 24}" text-anchor="middle" class="sb">NLP · MULTIMODAL AI · ML ENGINEERING</text>
+
+# -------------------------------------------- contact, section titles, focus
+
+# Shared by the pieces below: the same tokens as the stats cards, so headers,
+# cards and telemetry read as one family in either theme.
+UI_CSS = """
+    svg { --bg:#FFFFFF; --panel:#F6F8FA; --bd:#D8DEE4; --ink:#1F2328; --tx:#3D4752; --mu:#636C76;
+          --ac:#0B6FD4; --hi:#6A3DE8 }
+    @media (prefers-color-scheme: dark) {
+      svg { --bg:#0D1117; --panel:#111823; --bd:#1E3A52; --ink:#F0F6FC; --tx:#C3CDD8; --mu:#8B949E;
+            --ac:#36BCF7; --hi:#9D7BFF }
+    }
+"""
+
+CONTACTS = [
+    # (file, glyph, label, link) - the link is used by the README, not the SVG
+    ("github", "github", "@hotuyen21pt", "https://github.com/hotuyen21pt?tab=repositories"),
+    ("email", "gmail", "tuyennh2102@gmail.com", "mailto:tuyennh2102@gmail.com"),
+]
+
+
+def contact_pill(glyph: str, label: str) -> str:
+    """A rounded pill: accent icon disc and the handle, in the header's palette."""
+    h = 36
+    w = int(len(label) * 7.4 + 64)
+    return f"""<svg xmlns="http://www.w3.org/2000/svg" width="{w}" height="{h}" viewBox="0 0 {w} {h}" role="img" aria-label="{escape(label)}">
+  <defs>
+    <linearGradient id="rim" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" style="stop-color:var(--ac)"/><stop offset="100%" style="stop-color:var(--hi)"/>
+    </linearGradient>
+    <clipPath id="c"><rect x="1" y="1" width="{w - 2}" height="{h - 2}" rx="{h / 2 - 1}"/></clipPath>
+  </defs>
+  <style>{UI_CSS}
+    .sheen {{ animation: sheen 6s 1s ease-in-out infinite }}
+    @keyframes sheen {{ 0% {{ transform: translateX(-60px) }} 35%,100% {{ transform: translateX({w + 60}px) }} }}
+    @media (prefers-reduced-motion: reduce) {{ .sheen {{ display: none }} }}
+  </style>
+  <rect x="1" y="1" width="{w - 2}" height="{h - 2}" rx="{h / 2 - 1}" fill="var(--panel)" stroke="url(#rim)" stroke-width="1.5"/>
+  <g clip-path="url(#c)"><g class="sheen"><rect width="40" height="{h}" fill="var(--ac)" fill-opacity=".10" transform="skewX(-20)"/></g></g>
+  <circle cx="19" cy="18" r="12" fill="url(#rim)"/>
+  <path transform="translate(12 11) scale({14 / 24:.4f})" fill="#FFFFFF" d="{ICONS[glyph]}"/>
+  <text x="40" y="22.5" style="font:600 12px {MONO_FONT}" fill="var(--ink)">{escape(label)}</text>
+</svg>
+"""
+
+
+SECTIONS = [
+    # (file, title, hint on the right)
+    ("about", "About me", "paper → tested code → docker image"),
+    ("stack", "Technology arsenal", "click a row to open it"),
+    ("work", "Featured work", "click a card to open the repo"),
+    ("telemetry", "Telemetry", "rendered daily from the GitHub API"),
+]
+SECTION_W = 830
+
+
+def section_title(n: int, title: str, hint: str) -> str:
+    """Numbered section title with a rule that draws in. It replaces a
+    markdown ## heading, whose own underline doubled up with the old divider."""
+    w, h = SECTION_W, 62
+    return f"""<svg xmlns="http://www.w3.org/2000/svg" width="{w}" height="{h}" viewBox="0 0 {w} {h}" role="img" aria-label="{escape(title)}">
+  <defs>
+    <linearGradient id="rule" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" style="stop-color:var(--ac)"/>
+      <stop offset="45%" style="stop-color:var(--hi)"/>
+      <stop offset="100%" style="stop-color:var(--hi);stop-opacity:0"/>
+    </linearGradient>
+  </defs>
+  <style>{UI_CSS}
+    .no {{ font: 700 12px {MONO_FONT}; fill: var(--ac); letter-spacing: 1.5px }}
+    .tt {{ font: 800 25px {FONT}; fill: var(--ink) }}
+    .hn {{ font: 500 10.5px {MONO_FONT}; fill: var(--mu); letter-spacing: .4px }}
+    .rl {{ stroke-dasharray: {w}; stroke-dashoffset: {w}; animation: draw 1.2s .15s {EASE} forwards }}
+    @keyframes draw {{ to {{ stroke-dashoffset: 0 }} }}
+    .in {{ animation: in .6s {EASE} both }}
+    @keyframes in {{ from {{ opacity:0; transform: translateX(-8px) }} to {{ opacity:1; transform:none }} }}
+    @media (prefers-reduced-motion: reduce) {{ .rl,.in {{ animation: none }} .rl {{ stroke-dashoffset: 0 }} }}
+  </style>
+  <g class="in">
+    <text x="0" y="17" class="no">{n:02d} / {len(SECTIONS):02d}</text>
+    <text x="0" y="46" class="tt">{escape(title)}</text>
   </g>
+  <text x="{w}" y="46" text-anchor="end" class="hn">{escape(hint)}</text>
+  <line class="rl" x1="0" y1="{h - 3}" x2="{w}" y2="{h - 3}" stroke="url(#rule)" stroke-width="2" stroke-linecap="round"/>
+</svg>
+"""
+
+
+FOCUS = [
+    ("Aspect Sentiment Quad Prediction",
+     "Implicit aspects and opinions, syntax-aware supervision, reasoning-tree chain of thought."),
+    ("Multilingual & Vietnamese NLP",
+     "Cross-lingual transfer for low-resource ABSA, clause-level opinion units."),
+    ("Multimodal Medical AI",
+     "Grounded answers with bounding-box evidence, hallucination-resistant generation."),
+    ("Evaluation that means something",
+     "Data audits before benchmarks, permutation tests, documented deviations."),
+]
+
+
+def focus_cards() -> str:
+    """The four research interests as a 2x2 grid of small cards."""
+    w, gap, ch = 830, 14, 92
+    cw = (w - gap) / 2
+    h = 2 * ch + gap
+    cards = []
+    for i, (title, what) in enumerate(FOCUS):
+        x, y = (i % 2) * (cw + gap), (i // 2) * (ch + gap)
+        acc = "var(--ac)" if i in (0, 3) else "var(--hi)"
+        lines = textwrap.wrap(what, 58)
+        body = "".join(f'<text x="{x + 22:.1f}" y="{y + 60 + j * 16}" class="d">{escape(l)}</text>'
+                       for j, l in enumerate(lines[:2]))
+        cards.append(
+            f'  <g class="pop" style="animation-delay:{0.1 + i * 0.1:.2f}s">'
+            f'<rect x="{x + .75:.1f}" y="{y + .75}" width="{cw - 1.5:.1f}" height="{ch - 1.5}" rx="12" '
+            f'fill="var(--panel)" stroke="var(--bd)"/>'
+            f'<rect x="{x + .75:.1f}" y="{y + 16}" width="3" height="{ch - 32}" rx="1.5" fill="{acc}"/>'
+            f'<text x="{x + 22:.1f}" y="{y + 24}" class="k" fill="{acc}">FOCUS {i + 1:02d}</text>'
+            f'<text x="{x + 22:.1f}" y="{y + 42}" class="t">{escape(title)}</text>{body}</g>'
+        )
+    return f"""<svg xmlns="http://www.w3.org/2000/svg" width="{w}" height="{h}" viewBox="0 0 {w} {h}" role="img" aria-label="Research focus: {escape('; '.join(f[0] for f in FOCUS))}">
+  <style>{UI_CSS}
+    .k {{ font: 700 9px {MONO_FONT}; letter-spacing: 1.6px }}
+    .t {{ font: 700 15px {FONT}; fill: var(--ink) }}
+    .d {{ font: 400 12px {FONT}; fill: var(--tx) }}
+    .pop {{ opacity:0; animation: pop .55s {EASE} both }}
+    @keyframes pop {{ from {{ opacity:0; transform: translateY(6px) }} to {{ opacity:1; transform:none }} }}
+    @media (prefers-reduced-motion: reduce) {{ .pop {{ animation: none; opacity: 1 }} }}
+  </style>
+{chr(10).join(cards)}
 </svg>
 """
 
@@ -904,8 +1015,7 @@ class Project:
     key: str            # output file: assets/projects/<key>.svg
     repo: str           # links the card; also shown in its footer
     title: str
-    kicker: str         # what kind of work this is
-    color: str
+    kicker: str         # what kind of work this is; also picks the card colour
     mono: str           # chip monogram
     tagline: str
     metrics: tuple      # three (value, label) pairs
@@ -914,57 +1024,66 @@ class Project:
     footer: str = ""    # footer override when one card stands for two repos
 
 
+# One colour per kind of work rather than one per project: eight hues read as
+# decoration, three read as a legend.
+KIND_COLORS = {
+    "RESEARCH": "7C4DFF", "UNDERGRADUATE THESIS": "7C4DFF",
+    "PAPER REPRODUCTION": "0EA5E9", "PAPER REPRODUCTIONS": "0EA5E9",
+    "PRODUCT": "14B8A6",
+}
+
+
 PROJECTS = [
-    Project("prism", "Prism", "PRISM", "RESEARCH", "7C4DFF", "PR",
+    Project("prism", "Prism", "PRISM", "RESEARCH", "PR",
             "Temporal aspect-based sentiment analysis at scale",
             (("1.95M", "Booking.com reviews"), ("10,631", "hotels, 2022 → 2025"), ("23,995", "gold multimodal quads")),
             "Aspect-level sentiment drift with semi-supervised quad extraction, cross-modal "
             "confidence calibration from images, and reviewer-adjusted drift tested with "
             "permutation nulls + BH-FDR.",
             ("Python", "OpenCLIP", "Statistics", "Docker")),
-    Project("kltn", "KLTN-Token-Merging", "KLTN · Token Merging", "UNDERGRADUATE THESIS", "F59E0B", "KL",
+    Project("kltn", "KLTN-Token-Merging", "KLTN · Token Merging", "UNDERGRADUATE THESIS", "KL",
             "Vietnamese ABSA triplet extraction",
             (("2", "architectures"), ("GAS + UOS", "LLM extract & split"), ("FastAPI", "+ React demo UI")),
             "Joint (aspect, category, sentiment) extraction from Vietnamese hotel reviews: "
             "Joint ATE+APC against a T5 → BERT pipeline, GAS generative extraction and UOS "
             "clause splitting, plus the full LaTeX thesis.",
             ("T5", "BERT", "FastAPI", "React", "Ollama")),
-    Project("cxr", "CXR-VQA-custom", "CXR-VQA", "PAPER REPRODUCTION", "0EA5E9", "CX",
+    Project("cxr", "CXR-VQA-custom", "CXR-VQA", "PAPER REPRODUCTION", "CX",
             "Explainable chest X-ray VQA (arXiv:2511.00504)",
             (("4B", "MedGemma + LoRA"), ("60%", "released boxes wrong"), ("soft-GIoU", "differentiable bbox loss")),
             "MedGemma-4B-it fine-tuned under L_VQA + 0.5·L_bbox. A data audit found 60% of "
             "released QA pairs carried a mismatched ground-truth box; the published and the "
             "repaired data both ship behind a config switch.",
             ("MedGemma", "LoRA", "React UI", "Kaggle")),
-    Project("evidencekd", "EvidenceKD-MedVQA", "EvidenceKD-MedVQA", "RESEARCH", "10B981", "EK",
+    Project("evidencekd", "EvidenceKD-MedVQA", "EvidenceKD-MedVQA", "RESEARCH", "EK",
             "Evidence-grounded medical VQA with a verifier",
             (("180", "tests passing"), ("3-stage", "decide, explain, verify"), ("torch-free", "core logic")),
             "A decision branch produces the answer, findings and scores; a generator only "
             "explains them under a citation constraint; a verifier checks every claim. "
             "Faster R-CNN evidence detector with knowledge distillation.",
             ("Faster R-CNN", "Distillation", "pytest")),
-    Project("multilabsa", "MultiLABSA", "MultiLABSA", "RESEARCH", "EC4899", "ML",
+    Project("multilabsa", "MultiLABSA", "MultiLABSA", "RESEARCH", "ML",
             "Dual-teacher multilingual quad prediction",
             (("2", "teachers: mT5 + XLM-R"), ("4-tuple", "quads per opinion"), ("1 cmd", "Docker Compose")),
             "A generative mT5 teacher and an extractive XLM-R teacher merged by Confidence "
             "Fusion, with multi-view and disagreement modules. Gradio UI, CLI and a "
             "one-command Docker Compose.",
             ("mT5", "XLM-R", "Gradio", "Docker")),
-    Project("s2it", "s2it", "S2IT · Tree-CoT-RT", "PAPER REPRODUCTIONS", "EF4444", "S2",
+    Project("s2it", "s2it", "S2IT · Tree-CoT-RT", "PAPER REPRODUCTIONS", "S2",
             "Two ASQP baselines, rebuilt faithfully",
             (("NAACL '25", "S2IT"), ("ACL '26", "Tree-CoT-RT"), ("95", "tests")),
             "S2IT: three-stage syntax-guided tuning on one LoRA adapter with dependency-graph "
             "supervision. Tree-CoT-RT: type-specific reasoning trees, tSFT, then GRPO with a "
             "rule-based reward and self-consistent voting.",
             ("GRPO", "Stanza", "LoRA"), footer="hotuyen21pt/s2it  ·  /tree"),
-    Project("warehouse", "Smart-Warehouse-Management", "Smart Warehouse", "PRODUCT", "84CC16", "SW",
+    Project("warehouse", "Smart-Warehouse-Management", "Smart Warehouse", "PRODUCT", "SW",
             "IoT lot tracking for multi-branch warehouses",
             (("Go + Gin", "JWT REST API"), ("React 18", "TypeScript + Vite"), ("CV", "box-counter service")),
             "Barcode and QR scanning track lot numbers, manufacturing and expiry dates per SKU "
             "and branch, with a computer-vision service that counts boxes. Docker Compose for "
             "the whole stack.",
             ("Go", "Gin", "React", "TypeScript", "Docker")),
-    Project("cccd", "Detect-CCCD", "Detect-CCCD", "PRODUCT", "3B82F6", "ID",
+    Project("cccd", "Detect-CCCD", "Detect-CCCD", "PRODUCT", "ID",
             "Vietnamese ID card classifier as an OCR REST API",
             (("2", "card types"), ("OCR", "Vietnamese model"), ("CI", "GitHub Actions")),
             "Classifies an image as a citizen ID (CCCD) or a student card by running "
@@ -981,7 +1100,7 @@ PROJ_H = 166 + PROJ_LINES * 16 + 84
 
 
 def project_card(p: Project, n: int) -> str:
-    acc, pad, w, h = f"#{p.color}", 18, PROJ_W, PROJ_H
+    acc, pad, w, h = f"#{KIND_COLORS[p.kicker]}", 18, PROJ_W, PROJ_H
     out = [
         f'<rect x="{pad}" y="20" width="36" height="36" rx="9" fill="{acc}"/>',
         f'<text x="{pad + 18}" y="42.5" text-anchor="middle" style="font:800 13px {FONT}" fill="#FFFFFF">{p.mono}</text>',
@@ -1096,11 +1215,19 @@ def patch_block(marker: str, html: str) -> None:
 def main() -> None:
     ASSETS.mkdir(exist_ok=True)
     for name, svg in (("banner.svg", banner()),
-                      ("divider.svg", divider()),
                       ("signoff.svg", signoff()),
                       ("portrait.svg", portrait())):
         (ASSETS / name).write_text(svg, encoding="utf-8")
         print(f"wrote assets/{name}")
+
+    for sub in ("contact", "sections"):
+        (ASSETS / sub).mkdir(exist_ok=True)
+    for key, glyph, label, _ in CONTACTS:
+        (ASSETS / "contact" / f"{key}.svg").write_text(contact_pill(glyph, label), encoding="utf-8")
+    for n, (key, title, hint) in enumerate(SECTIONS, 1):
+        (ASSETS / "sections" / f"{key}.svg").write_text(section_title(n, title, hint), encoding="utf-8")
+    (ASSETS / "focus.svg").write_text(focus_cards(), encoding="utf-8")
+    print("wrote contact pills, section titles and focus cards")
 
     tech_dir = ASSETS / "tech"
     tech_dir.mkdir(exist_ok=True)

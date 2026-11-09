@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="830" height="198" viewBox="0 0 830 198" role="img" aria-label="Research focus: Aspect Sentiment Quad Prediction; Multilingual &amp; Vietnamese NLP; Multimodal Medical AI; Evaluation that means something">
+  <style>
+    svg { --bg:#FFFFFF; --panel:#F6F8FA; --bd:#D8DEE4; --ink:#1F2328; --tx:#3D4752; --mu:#636C76;
+          --ac:#0B6FD4; --hi:#6A3DE8 }
+    @media (prefers-color-scheme: dark) {
+      svg { --bg:#0D1117; --panel:#111823; --bd:#1E3A52; --ink:#F0F6FC; --tx:#C3CDD8; --mu:#8B949E;
+            --ac:#36BCF7; --hi:#9D7BFF }
+    }
+
+    .k { font: 700 9px 'JetBrains Mono','Cascadia Code',Consolas,monospace; letter-spacing: 1.6px }
+    .t { font: 700 15px 'Segoe UI',Ubuntu,-apple-system,sans-serif; fill: var(--ink) }
+    .d { font: 400 12px 'Segoe UI',Ubuntu,-apple-system,sans-serif; fill: var(--tx) }
+    .pop { opacity:0; animation: pop .55s cubic-bezier(.22,1,.36,1) both }
+    @keyframes pop { from { opacity:0; transform: translateY(6px) } to { opacity:1; transform:none } }
+    @media (prefers-reduced-motion: reduce) { .pop { animation: none; opacity: 1 } }
+  </style>
+  <g class="pop" style="animation-delay:0.10s"><rect x="0.8" y="0.75" width="406.5" height="90.5" rx="12" fill="var(--panel)" stroke="var(--bd)"/><rect x="0.8" y="16" width="3" height="60" rx="1.5" fill="var(--ac)"/><text x="22.0" y="24" class="k" fill="var(--ac)">FOCUS 01</text><text x="22.0" y="42" class="t">Aspect Sentiment Quad Prediction</text><text x="22.0" y="60" class="d">Implicit aspects and opinions, syntax-aware supervision,</text><text x="22.0" y="76" class="d">reasoning-tree chain of thought.</text></g>
+  <g class="pop" style="animation-delay:0.20s"><rect x="422.8" y="0.75" width="406.5" height="90.5" rx="12" fill="var(--panel)" stroke="var(--bd)"/><rect x="422.8" y="16" width="3" height="60" rx="1.5" fill="var(--hi)"/><text x="444.0" y="24" class="k" fill="var(--hi)">FOCUS 02</text><text x="444.0" y="42" class="t">Multilingual &amp; Vietnamese NLP</text><text x="444.0" y="60" class="d">Cross-lingual transfer for low-resource ABSA, clause-level</text><text x="444.0" y="76" class="d">opinion units.</text></g>
+  <g class="pop" style="animation-delay:0.30s"><rect x="0.8" y="106.75" width="406.5" height="90.5" rx="12" fill="var(--panel)" stroke="var(--bd)"/><rect x="0.8" y="122" width="3" height="60" rx="1.5" fill="var(--hi)"/><text x="22.0" y="130" class="k" fill="var(--hi)">FOCUS 03</text><text x="22.0" y="148" class="t">Multimodal Medical AI</text><text x="22.0" y="166" class="d">Grounded answers with bounding-box evidence,</text><text x="22.0" y="182" class="d">hallucination-resistant generation.</text></g>
+  <g class="pop" style="animation-delay:0.40s"><rect x="422.8" y="106.75" width="406.5" height="90.5" rx="12" fill="var(--panel)" stroke="var(--bd)"/><rect x="422.8" y="122" width="3" height="60" rx="1.5" fill="var(--ac)"/><text x="444.0" y="130" class="k" fill="var(--ac)">FOCUS 04</text><text x="444.0" y="148" class="t">Evaluation that means something</text><text x="444.0" y="166" class="d">Data audits before benchmarks, permutation tests,</text><text x="444.0" y="182" class="d">documented deviations.</text></g>
+</svg>

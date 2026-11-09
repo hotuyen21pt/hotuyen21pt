@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="219" height="36" viewBox="0 0 219 36" role="img" aria-label="tuyennh2102@gmail.com">
+  <defs>
+    <linearGradient id="rim" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" style="stop-color:var(--ac)"/><stop offset="100%" style="stop-color:var(--hi)"/>
+    </linearGradient>
+    <clipPath id="c"><rect x="1" y="1" width="217" height="34" rx="17.0"/></clipPath>
+  </defs>
+  <style>
+    svg { --bg:#FFFFFF; --panel:#F6F8FA; --bd:#D8DEE4; --ink:#1F2328; --tx:#3D4752; --mu:#636C76;
+          --ac:#0B6FD4; --hi:#6A3DE8 }
+    @media (prefers-color-scheme: dark) {
+      svg { --bg:#0D1117; --panel:#111823; --bd:#1E3A52; --ink:#F0F6FC; --tx:#C3CDD8; --mu:#8B949E;
+            --ac:#36BCF7; --hi:#9D7BFF }
+    }
+
+    .sheen { animation: sheen 6s 1s ease-in-out infinite }
+    @keyframes sheen { 0% { transform: translateX(-60px) } 35%,100% { transform: translateX(279px) } }
+    @media (prefers-reduced-motion: reduce) { .sheen { display: none } }
+  </style>
+  <rect x="1" y="1" width="217" height="34" rx="17.0" fill="var(--panel)" stroke="url(#rim)" stroke-width="1.5"/>
+  <g clip-path="url(#c)"><g class="sheen"><rect width="40" height="36" fill="var(--ac)" fill-opacity=".10" transform="skewX(-20)"/></g></g>
+  <circle cx="19" cy="18" r="12" fill="url(#rim)"/>
+  <path transform="translate(12 11) scale(0.5833)" fill="#FFFFFF" d="M24 5.457v13.909c0 .904-.732 1.636-1.636 1.636h-3.819V11.73L12 16.64l-6.545-4.91v9.273H1.636A1.636 1.636 0 0 1 0 19.366V5.457c0-2.023 2.309-3.178 3.927-1.964L5.455 4.64 12 9.548l6.545-4.91 1.528-1.145C21.69 2.28 24 3.434 24 5.457z"/>
+  <text x="40" y="22.5" style="font:600 12px 'JetBrains Mono','Cascadia Code',Consolas,monospace" fill="var(--ink)">tuyennh2102@gmail.com</text>
+</svg>
