@@ -721,6 +721,7 @@ PORTRAIT = json.loads((pathlib.Path(__file__).resolve().parent / "portrait.json"
 
 DOT = 7.2               # grid pitch
 CARD_X, CARD_Y = 30, 62
+LOOP = 8           # seconds per draw-hold-fade cycle of the portrait
 SPARK_COLORS = ["#36BCF7", "#7C4DFF", "#2EE6A6", "#FFFFFF"]
 
 
@@ -850,10 +851,19 @@ def portrait() -> str:
   <style>
     svg {{ --ink:#1F2328; --dim:#57606A }}
     @media (prefers-color-scheme: dark) {{ svg {{ --ink:#F0F6FC; --dim:#8B949E }} }}
-    .rw {{ opacity:0; animation: rw .6s cubic-bezier(.22,1,.36,1) both }}
-    @keyframes rw {{ from {{ opacity:0; transform: translateY(-3px) }} to {{ opacity:1; transform:none }} }}
-    .scan {{ animation: scan 6s 2.2s cubic-bezier(.45,0,.55,1) infinite }}
-    @keyframes scan {{ 0% {{ transform: translateY(-90px) }} 60%,100% {{ transform: translateY({card_h + 40}px) }} }}
+    /* One {LOOP}s loop: rows draw in top to bottom behind the scan band, hold,
+       fade out in the same order, and the picture redraws. Each row keeps
+       its delay on every pass, so the wave shape survives the repeat. */
+    .rw {{ opacity:0; animation: rw {LOOP}s ease-out infinite both }}
+    @keyframes rw {{
+      0%      {{ opacity:0; transform: translateY(-3px) }}
+      7%      {{ opacity:1; transform: none }}
+      80%     {{ opacity:1; transform: none }}
+      90%,100% {{ opacity:0; transform: none }}
+    }}
+    .scan {{ animation: scan {LOOP}s cubic-bezier(.45,0,.55,1) infinite }}
+    @keyframes scan {{ 0% {{ transform: translateY(-90px) }} 26%,100% {{ transform: translateY({card_h + 40}px) }} }}
+    @keyframes rise {{ from {{ opacity:0; transform: translateY(-3px) }} to {{ opacity:1; transform:none }} }}
     .tw {{ transform-box: fill-box; transform-origin: center; animation: tw 3s ease-in-out infinite }}
     @keyframes tw {{ 0%,100% {{ opacity:.15; transform: scale(.55) rotate(0deg) }} 50% {{ opacity:1; transform: scale(1) rotate(45deg) }} }}
     .cap {{ transform-box: fill-box; transform-origin: center; animation: bob 4.5s ease-in-out infinite }}
@@ -863,7 +873,7 @@ def portrait() -> str:
     @keyframes swing {{ 0%,100% {{ transform: rotate(-7deg) }} 50% {{ transform: rotate(9deg) }} }}
     .nm {{ font: 800 32px 'Segoe UI',Ubuntu,-apple-system,sans-serif; fill: var(--ink); letter-spacing: .3px }}
     .sb {{ font: 500 11px 'JetBrains Mono','Cascadia Code',Consolas,monospace; fill: var(--dim); letter-spacing: 2.4px }}
-    .fade {{ animation: rw .8s 1.6s cubic-bezier(.22,1,.36,1) both }}
+    .fade {{ animation: rise .8s 1.6s cubic-bezier(.22,1,.36,1) both }}
     @media (prefers-reduced-motion: reduce) {{
       .rw,.scan,.tw,.cap,.tassel,.fade {{ animation: none !important; opacity: 1 }} .scan {{ display: none }}
     }}
