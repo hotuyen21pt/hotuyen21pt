@@ -66,135 +66,26 @@ class TuyenHoNguyen:
 
 <table>
 <tr><td><b>Profile focus</b></td><td>Aspect sentiment quad prediction · Medical VQA · LLM fine-tuning · Vietnamese NLP</td></tr>
-<tr><td><b>GitHub signal</b></td><td><!--signal-->24 repositories · 4 stars · 415 contributions<!--/signal--></td></tr>
+<tr><td><b>Track record</b></td><td><!--repos-->24<!--/repos--> repositories · 3 paper reproductions · 275+ tests · 1.95M reviews analysed</td></tr>
 </table>
 
 <div align="center"><img src="assets/divider.svg" width="100%" alt="" /></div>
 
 ## 🚀 Featured Work
 
-<table>
-<tr>
-<td width="50%" valign="top">
+<!--projects-->
+<p align="center">
+<a href="https://github.com/hotuyen21pt/Prism"><img src="assets/projects/prism.svg" width="49%" alt="PRISM: Temporal aspect-based sentiment analysis at scale" /></a>&nbsp;<a href="https://github.com/hotuyen21pt/KLTN-Token-Merging"><img src="assets/projects/kltn.svg" width="49%" alt="KLTN · Token Merging: Vietnamese ABSA triplet extraction" /></a>
+<br/><br/>
+<a href="https://github.com/hotuyen21pt/CXR-VQA-custom"><img src="assets/projects/cxr.svg" width="49%" alt="CXR-VQA: Explainable chest X-ray VQA (arXiv:2511.00504)" /></a>&nbsp;<a href="https://github.com/hotuyen21pt/EvidenceKD-MedVQA"><img src="assets/projects/evidencekd.svg" width="49%" alt="EvidenceKD-MedVQA: Evidence-grounded medical VQA with a verifier" /></a>
+<br/><br/>
+<a href="https://github.com/hotuyen21pt/MultiLABSA"><img src="assets/projects/multilabsa.svg" width="49%" alt="MultiLABSA: Dual-teacher multilingual quad prediction" /></a>&nbsp;<a href="https://github.com/hotuyen21pt/s2it"><img src="assets/projects/s2it.svg" width="49%" alt="S2IT · Tree-CoT-RT: Two ASQP baselines, rebuilt faithfully" /></a>
+<br/><br/>
+<a href="https://github.com/hotuyen21pt/Smart-Warehouse-Management"><img src="assets/projects/warehouse.svg" width="49%" alt="Smart Warehouse: IoT lot tracking for multi-branch warehouses" /></a>&nbsp;<a href="https://github.com/hotuyen21pt/Detect-CCCD"><img src="assets/projects/cccd.svg" width="49%" alt="Detect-CCCD: Vietnamese ID card classifier as an OCR REST API" /></a>
+</p>
+<!--/projects-->
 
-### 🔭 [PRISM](https://github.com/hotuyen21pt/Prism)
-**Temporal Aspect-Based Sentiment Analysis at scale**
-
-Aspect-level sentiment *drift* across **1.95M Booking.com reviews**
-(10,631 hotels, 2022→2025) with 23,995 gold multimodal quads.
-Semi-supervised quad extraction with provenance priors, cross-modal
-confidence calibration from images, and reviewer-composition-adjusted
-drift estimation with **permutation nulls + BH-FDR**.
-
-`Python` · `OpenCLIP` · `Statistics` · `Docker`
-
-</td>
-<td width="50%" valign="top">
-
-### 🎓 [KLTN-Token-Merging](https://github.com/hotuyen21pt/KLTN-Token-Merging)
-**Undergraduate thesis — Vietnamese ABSA triplet extraction**
-
-Joint `(aspect_term, category, sentiment)` extraction from Vietnamese
-hotel reviews. Compares **Joint (ATE+APC)** vs **Pipeline (T5 → BERT)**
-architectures, plus **GAS** generative extraction and **UOS** LLM-based
-clause splitting. Ships a FastAPI backend + React demo UI and the full
-LaTeX thesis.
-
-`T5` · `BERT` · `FastAPI` · `React` · `Ollama`
-
-</td>
-</tr>
-<tr>
-<td width="50%" valign="top">
-
-### 🩻 [CXR-VQA-custom](https://github.com/hotuyen21pt/CXR-VQA-custom)
-**Explainable chest X-ray VQA — paper reproduction**
-
-Reproduction of *VinDr-CXR-VQA* (arXiv:2511.00504): **MedGemma-4B-it
-fine-tuned with LoRA** under a multi-task objective
-(`L_VQA + 0.5·L_bbox`), with a **differentiable soft-GIoU loss over
-coordinate tokens**. Includes a data audit that found 60% of released
-QA pairs carried a mismatched ground-truth box — and shipped both the
-published and the repaired version as a config switch.
-
-`MedGemma` · `LoRA` · `soft-GIoU` · `React UI` · `Kaggle`
-
-</td>
-<td width="50%" valign="top">
-
-### 🧠 [EvidenceKD-MedVQA](https://github.com/hotuyen21pt/EvidenceKD-MedVQA)
-**Evidence-grounded medical VQA with a verifier**
-
-A decision branch produces the answer, findings and scores; a generator
-only *explains* them under a **citation constraint**; a verifier checks
-each claim. Faster R-CNN evidence detector, knowledge distillation,
-Answer-Lock, and a bridge that replays results through the sibling
-repo's scorer. **180 tests pass** — with a deliberately torch-free core.
-
-`Faster R-CNN` · `Knowledge Distillation` · `pytest`
-
-</td>
-</tr>
-<tr>
-<td width="50%" valign="top">
-
-### 🌐 [MultiLABSA](https://github.com/hotuyen21pt/MultiLABSA)
-**Dual-teacher multilingual ASQP**
-
-Quad extraction `(aspect, opinion, category, sentiment)` from
-multilingual hotel reviews via two teachers — a **generative mT5** and
-an **extractive XLM-R** — merged by *Confidence Fusion*, with
-multi-view and disagreement modules. Gradio UI + CLI, one-command
-Docker Compose.
-
-`mT5` · `XLM-R` · `Gradio` · `Docker`
-
-</td>
-<td width="50%" valign="top">
-
-### 📄 [s2it](https://github.com/hotuyen21pt/s2it) · [tree](https://github.com/hotuyen21pt/tree)
-**Two ASQP baselines, rebuilt faithfully**
-
-**S2IT** (NAACL 2025) — three-stage syntax-guided tuning on a single
-LoRA adapter with dependency-graph supervision.
-**Tree-CoT-RT** (ACL 2026) — type-specific reasoning trees, tSFT, then
-**GRPO** with a rule-based reward and self-consistent voting.
-Byte-identical splits across both, and a *"decisions that must not be
-reverted"* ledger in each README.
-
-`GRPO` · `Stanza` · `LoRA` · `95 tests`
-
-</td>
-</tr>
-<tr>
-<td width="50%" valign="top">
-
-### 📦 [Smart-Warehouse-Management](https://github.com/hotuyen21pt/Smart-Warehouse-Management)
-**IoT lot-tracking for multi-branch warehouses**
-
-Barcode/QR scanning to track lot numbers, manufacturing and expiry
-dates per SKU and branch, plus a **computer-vision box-counter
-service**. Go (Gin) + JWT API, React 18 + TypeScript + Vite frontend,
-Docker Compose.
-
-`Go` · `Gin` · `React` · `TypeScript` · `CV`
-
-</td>
-<td width="50%" valign="top">
-
-### 🪪 [Detect-CCCD](https://github.com/hotuyen21pt/Detect-CCCD)
-**Vietnamese ID card classifier — OCR REST API**
-
-Classifies an image as a Vietnamese **citizen ID (CCCD)** or a
-**student card** by running Vietnamese PaddleOCR and scoring keyword
-matches. FastAPI endpoint, drag-and-drop web UI, Dockerised, with
-**CI on GitHub Actions**.
-
-`PaddleOCR` · `FastAPI` · `Docker` · `CI`
-
-</td>
-</tr>
-</table>
+<sub>Also in the S2IT card: <a href="https://github.com/hotuyen21pt/tree">Tree-CoT-RT → hotuyen21pt/tree</a></sub>
 
 <details>
 <summary><b>🗂️ More projects</b></summary>

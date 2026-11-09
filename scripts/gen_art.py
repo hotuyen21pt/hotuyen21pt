@@ -11,7 +11,8 @@ banners end up with the caret floating in empty space.
 
 Writes assets/banner.svg, assets/divider.svg, assets/signoff.svg, a strip and a
 panel per tech-stack group under assets/tech/, and the matching <details>
-blocks in README.md between the <!--techstack--> markers.
+blocks in README.md between the <!--techstack--> markers, plus one card per
+featured project under assets/projects/ and the <!--projects--> block.
 Every file carries a light and a dark palette; GitHub renders whichever the
 reader's theme asks for.
 """
@@ -712,15 +713,201 @@ def techstack_html() -> str:
     return "\n\n".join(out)
 
 
-def patch_readme() -> None:
+# ------------------------------------------------------------ project cards
+
+
+@dataclass(frozen=True)
+class Project:
+    key: str            # output file: assets/projects/<key>.svg
+    repo: str           # links the card; also shown in its footer
+    title: str
+    kicker: str         # what kind of work this is
+    color: str
+    mono: str           # chip monogram
+    tagline: str
+    metrics: tuple      # three (value, label) pairs
+    what: str
+    stack: tuple
+    footer: str = ""    # footer override when one card stands for two repos
+
+
+PROJECTS = [
+    Project("prism", "Prism", "PRISM", "RESEARCH", "7C4DFF", "PR",
+            "Temporal aspect-based sentiment analysis at scale",
+            (("1.95M", "Booking.com reviews"), ("10,631", "hotels, 2022 → 2025"), ("23,995", "gold multimodal quads")),
+            "Aspect-level sentiment drift with semi-supervised quad extraction, cross-modal "
+            "confidence calibration from images, and reviewer-adjusted drift tested with "
+            "permutation nulls + BH-FDR.",
+            ("Python", "OpenCLIP", "Statistics", "Docker")),
+    Project("kltn", "KLTN-Token-Merging", "KLTN · Token Merging", "UNDERGRADUATE THESIS", "F59E0B", "KL",
+            "Vietnamese ABSA triplet extraction",
+            (("2", "architectures"), ("GAS + UOS", "LLM extract & split"), ("FastAPI", "+ React demo UI")),
+            "Joint (aspect, category, sentiment) extraction from Vietnamese hotel reviews: "
+            "Joint ATE+APC against a T5 → BERT pipeline, GAS generative extraction and UOS "
+            "clause splitting, plus the full LaTeX thesis.",
+            ("T5", "BERT", "FastAPI", "React", "Ollama")),
+    Project("cxr", "CXR-VQA-custom", "CXR-VQA", "PAPER REPRODUCTION", "0EA5E9", "CX",
+            "Explainable chest X-ray VQA (arXiv:2511.00504)",
+            (("4B", "MedGemma + LoRA"), ("60%", "released boxes wrong"), ("soft-GIoU", "differentiable bbox loss")),
+            "MedGemma-4B-it fine-tuned under L_VQA + 0.5·L_bbox. A data audit found 60% of "
+            "released QA pairs carried a mismatched ground-truth box; the published and the "
+            "repaired data both ship behind a config switch.",
+            ("MedGemma", "LoRA", "React UI", "Kaggle")),
+    Project("evidencekd", "EvidenceKD-MedVQA", "EvidenceKD-MedVQA", "RESEARCH", "10B981", "EK",
+            "Evidence-grounded medical VQA with a verifier",
+            (("180", "tests passing"), ("3-stage", "decide, explain, verify"), ("torch-free", "core logic")),
+            "A decision branch produces the answer, findings and scores; a generator only "
+            "explains them under a citation constraint; a verifier checks every claim. "
+            "Faster R-CNN evidence detector with knowledge distillation.",
+            ("Faster R-CNN", "Distillation", "pytest")),
+    Project("multilabsa", "MultiLABSA", "MultiLABSA", "RESEARCH", "EC4899", "ML",
+            "Dual-teacher multilingual quad prediction",
+            (("2", "teachers: mT5 + XLM-R"), ("4-tuple", "quads per opinion"), ("1 cmd", "Docker Compose")),
+            "A generative mT5 teacher and an extractive XLM-R teacher merged by Confidence "
+            "Fusion, with multi-view and disagreement modules. Gradio UI, CLI and a "
+            "one-command Docker Compose.",
+            ("mT5", "XLM-R", "Gradio", "Docker")),
+    Project("s2it", "s2it", "S2IT · Tree-CoT-RT", "PAPER REPRODUCTIONS", "EF4444", "S2",
+            "Two ASQP baselines, rebuilt faithfully",
+            (("NAACL '25", "S2IT"), ("ACL '26", "Tree-CoT-RT"), ("95", "tests")),
+            "S2IT: three-stage syntax-guided tuning on one LoRA adapter with dependency-graph "
+            "supervision. Tree-CoT-RT: type-specific reasoning trees, tSFT, then GRPO with a "
+            "rule-based reward and self-consistent voting.",
+            ("GRPO", "Stanza", "LoRA"), footer="hotuyen21pt/s2it  ·  /tree"),
+    Project("warehouse", "Smart-Warehouse-Management", "Smart Warehouse", "PRODUCT", "84CC16", "SW",
+            "IoT lot tracking for multi-branch warehouses",
+            (("Go + Gin", "JWT REST API"), ("React 18", "TypeScript + Vite"), ("CV", "box-counter service")),
+            "Barcode and QR scanning track lot numbers, manufacturing and expiry dates per SKU "
+            "and branch, with a computer-vision service that counts boxes. Docker Compose for "
+            "the whole stack.",
+            ("Go", "Gin", "React", "TypeScript", "Docker")),
+    Project("cccd", "Detect-CCCD", "Detect-CCCD", "PRODUCT", "3B82F6", "ID",
+            "Vietnamese ID card classifier as an OCR REST API",
+            (("2", "card types"), ("OCR", "Vietnamese model"), ("CI", "GitHub Actions")),
+            "Classifies an image as a citizen ID (CCCD) or a student card by running "
+            "Vietnamese PaddleOCR and scoring keyword matches. FastAPI endpoint, "
+            "drag-and-drop web UI, Dockerised.",
+            ("PaddleOCR", "FastAPI", "Docker")),
+]
+
+PROJ_W = 400
+PROJ_CHARS = 64         # description wrap at 11.5px across 364px
+PROJ_LINES = max(len(textwrap.wrap(p.what, PROJ_CHARS)) for p in PROJECTS)
+# Every card is the same height so the pairs line up in the README.
+PROJ_H = 166 + PROJ_LINES * 16 + 84
+
+
+def project_card(p: Project, n: int) -> str:
+    acc, pad, w, h = f"#{p.color}", 18, PROJ_W, PROJ_H
+    out = [
+        f'<rect x="{pad}" y="20" width="36" height="36" rx="9" fill="{acc}"/>',
+        f'<text x="{pad + 18}" y="42.5" text-anchor="middle" style="font:800 13px {FONT}" fill="#FFFFFF">{p.mono}</text>',
+        f'<text x="{pad + 48}" y="30" style="font:700 8.5px {MONO_FONT};letter-spacing:1.6px" fill="{acc}">{escape(p.kicker)}</text>',
+        f'<text x="{pad + 48}" y="50" style="font:700 17px {FONT}" fill="var(--ink)">{escape(p.title)}</text>',
+        f'<circle class="pulse" cx="{w - pad - 4}" cy="26" r="3.5" fill="{acc}"/>',
+        f'<text x="{pad}" y="78" style="font:600 11.5px {FONT}" fill="var(--dim)">{escape(p.tagline)}</text>',
+    ]
+
+    mw = (w - 2 * pad - 2 * 8) / 3
+    for i, (val, label) in enumerate(p.metrics):
+        x = pad + i * (mw + 8)
+        out.append(
+            f'<g class="pop" style="animation-delay:{0.35 + i * 0.1:.2f}s">'
+            f'<rect x="{x:.1f}" y="92" width="{mw:.1f}" height="54" rx="9" fill="{acc}" fill-opacity=".09" '
+            f'stroke="{acc}" stroke-opacity=".35"/>'
+            f'<text x="{x + 12:.1f}" y="118" style="font:800 18px {FONT}" fill="{acc}">{escape(val)}</text>'
+            f'<text x="{x + 12:.1f}" y="136" style="font:500 9.5px {FONT}" fill="var(--dim)">{escape(label)}</text></g>'
+        )
+
+    y = 172
+    for line in textwrap.wrap(p.what, PROJ_CHARS):
+        out.append(f'<text x="{pad}" y="{y}" style="font:400 11.5px {FONT}" fill="var(--tx)">{escape(line)}</text>')
+        y += 16
+
+    y = h - 76
+    x = pad
+    for s in p.stack:
+        cw = len(s) * 5.75 + 20
+        out.append(
+            f'<rect x="{x:.1f}" y="{y}" width="{cw:.0f}" height="20" rx="10" fill="var(--chip)" '
+            f'stroke="{acc}" stroke-opacity=".5"/>'
+            f'<text x="{x + 10:.1f}" y="{y + 13.5}" style="font:500 9.5px {MONO_FONT}" fill="var(--ink)">{escape(s)}</text>'
+        )
+        x += cw + 6
+
+    foot = p.footer or f"hotuyen21pt/{p.repo}"
+    out += [
+        f'<line x1="{pad}" y1="{h - 42}" x2="{w - pad}" y2="{h - 42}" stroke="var(--line)"/>',
+        f'<text x="{pad}" y="{h - 20}" style="font:500 10px {MONO_FONT}" fill="var(--dim)">{escape(foot)}</text>',
+        f'<g class="nudge"><text x="{w - pad}" y="{h - 20}" text-anchor="end" style="font:700 10.5px {FONT}" '
+        f'fill="{acc}">View repo →</text></g>',
+    ]
+    body = "\n    ".join(out)
+    return f"""<svg xmlns="http://www.w3.org/2000/svg" width="{w}" height="{h}" viewBox="0 0 {w} {h}" role="img" aria-label="{escape(p.title)}: {escape(p.tagline)}">
+  <defs>
+    <linearGradient id="rim" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" style="stop-color:{acc}"/>
+      <stop offset="50%" style="stop-color:{acc};stop-opacity:.2"/>
+      <stop offset="100%" style="stop-color:{acc}"/>
+      <animateTransform attributeName="gradientTransform" type="rotate" from="0 .5 .5" to="360 .5 .5" dur="{7 + n % 3}s" repeatCount="indefinite"/>
+    </linearGradient>
+    <linearGradient id="glare" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0"/>
+      <stop offset="50%" stop-color="#FFFFFF" stop-opacity=".14"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+    <clipPath id="clip"><rect x="1" y="1" width="{w - 2}" height="{h - 2}" rx="14"/></clipPath>
+  </defs>
+  <style>{PALETTE_CSS}
+    svg {{ --line:#D8DEE4 }}
+    @media (prefers-color-scheme: dark) {{ svg {{ --line:#253043 }} }}
+    .card {{ animation: card .7s {n * 0.08:.2f}s {EASE} both }}
+    @keyframes card {{ from {{ opacity:0; transform: translateY(10px) }} to {{ opacity:1; transform:none }} }}
+    .pop {{ opacity:0; transform-box: fill-box; transform-origin: center; animation: pop .5s {EASE} both }}
+    @keyframes pop {{ from {{ opacity:0; transform: scale(.85) }} to {{ opacity:1; transform:none }} }}
+    .sheen {{ animation: sheen 5s {1.5 + n * 0.6:.1f}s ease-in-out infinite }}
+    @keyframes sheen {{ 0% {{ transform: translateX(-140px) }} 40%,100% {{ transform: translateX({w + 160}px) }} }}
+    .pulse {{ transform-box: fill-box; transform-origin: center; animation: pulse 2.4s ease-in-out infinite }}
+    @keyframes pulse {{ 0%,100% {{ opacity:.35; transform: scale(1) }} 50% {{ opacity:1; transform: scale(1.4) }} }}
+    .nudge {{ animation: nudge 2.4s ease-in-out infinite }}
+    @keyframes nudge {{ 0%,100% {{ transform: none }} 50% {{ transform: translateX(3px) }} }}
+    @media (prefers-reduced-motion: reduce) {{
+      .card,.pop,.sheen,.pulse,.nudge {{ animation: none !important; opacity: 1 }} .sheen {{ display: none }}
+    }}
+  </style>
+  <g class="card">
+    <rect x="1" y="1" width="{w - 2}" height="{h - 2}" rx="14" fill="var(--card)" stroke="url(#rim)" stroke-width="2"/>
+    <g clip-path="url(#clip)">
+      <rect width="{w}" height="5" fill="{acc}"/>
+      <rect width="{w}" height="88" fill="{acc}" fill-opacity=".06"/>
+      <g class="sheen"><rect width="90" height="{h}" fill="url(#glare)" transform="skewX(-20)"/></g>
+    </g>
+    {body}
+  </g>
+</svg>
+"""
+
+
+def projects_html() -> str:
+    """Cards in pairs. Each image sits inside its own repo link, so GitHub does
+    not also wrap it in a link to the raw SVG, and a click opens the repo."""
+    cells = [
+        f'<a href="{GH}{p.repo}"><img src="assets/projects/{p.key}.svg" width="49%" '
+        f'alt="{escape(p.title)}: {escape(p.tagline)}" /></a>'
+        for p in PROJECTS
+    ]
+    rows = ["&nbsp;".join(cells[i:i + 2]) for i in range(0, len(cells), 2)]
+    return '<p align="center">\n' + "\n<br/><br/>\n".join(rows) + "\n</p>"
+
+
+def patch_block(marker: str, html: str) -> None:
     path = ROOT / "README.md"
     text = path.read_text(encoding="utf-8")
-    m = re.search(r"(<!--techstack-->\n).*?(<!--/techstack-->)", text, re.S)
+    m = re.search(rf"(<!--{marker}-->\n).*?(<!--/{marker}-->)", text, re.S)
     if not m:
-        raise SystemExit("README.md has no <!--techstack--> block")
-    text = text[:m.end(1)] + techstack_html() + "\n" + text[m.start(2):]
-    path.write_text(text, encoding="utf-8")
-    print("patched README.md tech stack")
+        raise SystemExit(f"README.md has no <!--{marker}--> block")
+    path.write_text(text[:m.end(1)] + html + "\n" + text[m.start(2):], encoding="utf-8")
+    print(f"patched README.md {marker}")
 
 
 def main() -> None:
@@ -739,7 +926,16 @@ def main() -> None:
         (tech_dir / f"strip-{slug}.svg").write_text(strip(title, techs), encoding="utf-8")
         (tech_dir / f"panel-{slug}.svg").write_text(panel(slug, title, techs), encoding="utf-8")
     print(f"wrote {len(GROUPS)} strips and panels to assets/tech/")
-    patch_readme()
+    patch_block("techstack", techstack_html())
+
+    proj_dir = ASSETS / "projects"
+    proj_dir.mkdir(exist_ok=True)
+    for old in proj_dir.glob("*.svg"):
+        old.unlink()
+    for n, pr in enumerate(PROJECTS):
+        (proj_dir / f"{pr.key}.svg").write_text(project_card(pr, n), encoding="utf-8")
+    print(f"wrote {len(PROJECTS)} project cards to assets/projects/")
+    patch_block("projects", projects_html())
 
 
 if __name__ == "__main__":

@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="314" viewBox="0 0 400 314" role="img" aria-label="KLTN · Token Merging: Vietnamese ABSA triplet extraction">
+  <defs>
+    <linearGradient id="rim" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" style="stop-color:#F59E0B"/>
+      <stop offset="50%" style="stop-color:#F59E0B;stop-opacity:.2"/>
+      <stop offset="100%" style="stop-color:#F59E0B"/>
+      <animateTransform attributeName="gradientTransform" type="rotate" from="0 .5 .5" to="360 .5 .5" dur="8s" repeatCount="indefinite"/>
+    </linearGradient>
+    <linearGradient id="glare" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0"/>
+      <stop offset="50%" stop-color="#FFFFFF" stop-opacity=".14"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+    <clipPath id="clip"><rect x="1" y="1" width="398" height="312" rx="14"/></clipPath>
+  </defs>
+  <style>
+    svg { --panel:#F6F8FA; --card:#FFFFFF; --ink:#1F2328; --tx:#3D4752; --dim:#6E7781;
+          --chip:#F3F6FA; --ac:#0B6FD4 }
+    @media (prefers-color-scheme: dark) {
+      svg { --panel:#161B26; --card:#111826; --ink:#F0F6FC; --tx:#C3CDD8; --dim:#8B949E;
+            --chip:#1A2333; --ac:#36BCF7 }
+    }
+
+    svg { --line:#D8DEE4 }
+    @media (prefers-color-scheme: dark) { svg { --line:#253043 } }
+    .card { animation: card .7s 0.08s cubic-bezier(.22,1,.36,1) both }
+    @keyframes card { from { opacity:0; transform: translateY(10px) } to { opacity:1; transform:none } }
+    .pop { opacity:0; transform-box: fill-box; transform-origin: center; animation: pop .5s cubic-bezier(.22,1,.36,1) both }
+    @keyframes pop { from { opacity:0; transform: scale(.85) } to { opacity:1; transform:none } }
+    .sheen { animation: sheen 5s 2.1s ease-in-out infinite }
+    @keyframes sheen { 0% { transform: translateX(-140px) } 40%,100% { transform: translateX(560px) } }
+    .pulse { transform-box: fill-box; transform-origin: center; animation: pulse 2.4s ease-in-out infinite }
+    @keyframes pulse { 0%,100% { opacity:.35; transform: scale(1) } 50% { opacity:1; transform: scale(1.4) } }
+    .nudge { animation: nudge 2.4s ease-in-out infinite }
+    @keyframes nudge { 0%,100% { transform: none } 50% { transform: translateX(3px) } }
+    @media (prefers-reduced-motion: reduce) {
+      .card,.pop,.sheen,.pulse,.nudge { animation: none !important; opacity: 1 } .sheen { display: none }
+    }
+  </style>
+  <g class="card">
+    <rect x="1" y="1" width="398" height="312" rx="14" fill="var(--card)" stroke="url(#rim)" stroke-width="2"/>
+    <g clip-path="url(#clip)">
+      <rect width="400" height="5" fill="#F59E0B"/>
+      <rect width="400" height="88" fill="#F59E0B" fill-opacity=".06"/>
+      <g class="sheen"><rect width="90" height="314" fill="url(#glare)" transform="skewX(-20)"/></g>
+    </g>
+    <rect x="18" y="20" width="36" height="36" rx="9" fill="#F59E0B"/>
+    <text x="36" y="42.5" text-anchor="middle" style="font:800 13px 'Segoe UI',Ubuntu,-apple-system,sans-serif" fill="#FFFFFF">KL</text>
+    <text x="66" y="30" style="font:700 8.5px 'JetBrains Mono','Cascadia Code',Consolas,monospace;letter-spacing:1.6px" fill="#F59E0B">UNDERGRADUATE THESIS</text>
+    <text x="66" y="50" style="font:700 17px 'Segoe UI',Ubuntu,-apple-system,sans-serif" fill="var(--ink)">KLTN · Token Merging</text>
+    <circle class="pulse" cx="378" cy="26" r="3.5" fill="#F59E0B"/>
+    <text x="18" y="78" style="font:600 11.5px 'Segoe UI',Ubuntu,-apple-system,sans-serif" fill="var(--dim)">Vietnamese ABSA triplet extraction</text>
+    <g class="pop" style="animation-delay:0.35s"><rect x="18.0" y="92" width="116.0" height="54" rx="9" fill="#F59E0B" fill-opacity=".09" stroke="#F59E0B" stroke-opacity=".35"/><text x="30.0" y="118" style="font:800 18px 'Segoe UI',Ubuntu,-apple-system,sans-serif" fill="#F59E0B">2</text><text x="30.0" y="136" style="font:500 9.5px 'Segoe UI',Ubuntu,-apple-system,sans-serif" fill="var(--dim)">architectures</text></g>
+    <g class="pop" style="animation-delay:0.45s"><rect x="142.0" y="92" width="116.0" height="54" rx="9" fill="#F59E0B" fill-opacity=".09" stroke="#F59E0B" stroke-opacity=".35"/><text x="154.0" y="118" style="font:800 18px 'Segoe UI',Ubuntu,-apple-system,sans-serif" fill="#F59E0B">GAS + UOS</text><text x="154.0" y="136" style="font:500 9.5px 'Segoe UI',Ubuntu,-apple-system,sans-serif" fill="var(--dim)">LLM extract &amp; split</text></g>
+    <g class="pop" style="animation-delay:0.55s"><rect x="266.0" y="92" width="116.0" height="54" rx="9" fill="#F59E0B" fill-opacity=".09" stroke="#F59E0B" stroke-opacity=".35"/><text x="278.0" y="118" style="font:800 18px 'Segoe UI',Ubuntu,-apple-system,sans-serif" fill="#F59E0B">FastAPI</text><text x="278.0" y="136" style="font:500 9.5px 'Segoe UI',Ubuntu,-apple-system,sans-serif" fill="var(--dim)">+ React demo UI</text></g>
+    <text x="18" y="172" style="font:400 11.5px 'Segoe UI',Ubuntu,-apple-system,sans-serif" fill="var(--tx)">Joint (aspect, category, sentiment) extraction from Vietnamese</text>
+    <text x="18" y="188" style="font:400 11.5px 'Segoe UI',Ubuntu,-apple-system,sans-serif" fill="var(--tx)">hotel reviews: Joint ATE+APC against a T5 → BERT pipeline, GAS</text>
+    <text x="18" y="204" style="font:400 11.5px 'Segoe UI',Ubuntu,-apple-system,sans-serif" fill="var(--tx)">generative extraction and UOS clause splitting, plus the full</text>
+    <text x="18" y="220" style="font:400 11.5px 'Segoe UI',Ubuntu,-apple-system,sans-serif" fill="var(--tx)">LaTeX thesis.</text>
+    <rect x="18.0" y="238" width="32" height="20" rx="10" fill="var(--chip)" stroke="#F59E0B" stroke-opacity=".5"/><text x="28.0" y="251.5" style="font:500 9.5px 'JetBrains Mono','Cascadia Code',Consolas,monospace" fill="var(--ink)">T5</text>
+    <rect x="55.5" y="238" width="43" height="20" rx="10" fill="var(--chip)" stroke="#F59E0B" stroke-opacity=".5"/><text x="65.5" y="251.5" style="font:500 9.5px 'JetBrains Mono','Cascadia Code',Consolas,monospace" fill="var(--ink)">BERT</text>
+    <rect x="104.5" y="238" width="60" height="20" rx="10" fill="var(--chip)" stroke="#F59E0B" stroke-opacity=".5"/><text x="114.5" y="251.5" style="font:500 9.5px 'JetBrains Mono','Cascadia Code',Consolas,monospace" fill="var(--ink)">FastAPI</text>
+    <rect x="170.8" y="238" width="49" height="20" rx="10" fill="var(--chip)" stroke="#F59E0B" stroke-opacity=".5"/><text x="180.8" y="251.5" style="font:500 9.5px 'JetBrains Mono','Cascadia Code',Consolas,monospace" fill="var(--ink)">React</text>
+    <rect x="225.5" y="238" width="54" height="20" rx="10" fill="var(--chip)" stroke="#F59E0B" stroke-opacity=".5"/><text x="235.5" y="251.5" style="font:500 9.5px 'JetBrains Mono','Cascadia Code',Consolas,monospace" fill="var(--ink)">Ollama</text>
+    <line x1="18" y1="272" x2="382" y2="272" stroke="var(--line)"/>
+    <text x="18" y="294" style="font:500 10px 'JetBrains Mono','Cascadia Code',Consolas,monospace" fill="var(--dim)">hotuyen21pt/KLTN-Token-Merging</text>
+    <g class="nudge"><text x="382" y="294" text-anchor="end" style="font:700 10.5px 'Segoe UI',Ubuntu,-apple-system,sans-serif" fill="#F59E0B">View repo →</text></g>
+  </g>
+</svg>
