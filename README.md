@@ -44,7 +44,7 @@ class TuyenHoNguyen:
 <tr><td><b>Models</b></td><td>MedGemma-4B · Qwen3-8B · mT5 / T5 · XLM-R / BERT · OpenCLIP · Faster R-CNN</td></tr>
 <tr><td><b>Serving &amp; infra</b></td><td>FastAPI | Gin | Gradio | React + Vite | Docker | GitHub Actions | Ollama | Kaggle GPU | SQLite | pytest</td></tr>
 <tr><td><b>Profile focus</b></td><td>Aspect sentiment quad prediction · Medical VQA · LLM fine-tuning · Vietnamese NLP</td></tr>
-<tr><td><b>GitHub signal</b></td><td><!--signal-->24 repositories · 4 stars · 414 contributions<!--/signal--></td></tr>
+<tr><td><b>GitHub signal</b></td><td><!--signal-->24 repositories · 4 stars · 415 contributions<!--/signal--></td></tr>
 </table>
 
 <div align="center"><img src="assets/divider.svg" width="100%" alt="" /></div>
