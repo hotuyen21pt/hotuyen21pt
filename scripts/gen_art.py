@@ -9,13 +9,15 @@ banners end up with the caret floating in empty space.
 
     python scripts/gen_art.py
 
-Writes assets/banner.svg, assets/divider.svg, assets/signoff.svg.
+Writes assets/banner.svg, assets/divider.svg, assets/signoff.svg and
+assets/techstack.svg.
 Every file carries a light and a dark palette; GitHub renders whichever the
 reader's theme asks for.
 """
 
 from __future__ import annotations
 
+import json
 import pathlib
 import random
 
@@ -369,11 +371,91 @@ def signoff() -> str:
 """
 
 
+# Glyphs are simple-icons@13.21.0 paths (24x24 viewBox), vendored so the
+# render needs no network and stays byte-stable.
+ICONS = json.loads((pathlib.Path(__file__).resolve().parent / "tech_icons.json")
+                   .read_text(encoding="utf-8"))
+
+# (slug, label, brand colour, border override). The override is for brands
+# whose colour is too dark to read as an outline on the dark panel.
+TECH = [
+    ("python", "Python", "3776AB", None),
+    ("go", "Go", "00ADD8", None),
+    ("typescript", "TypeScript", "3178C6", None),
+    ("javascript", "JavaScript", "F7DF1E", None),
+    ("postgresql", "SQL", "4169E1", None),
+    ("gnubash", "Shell", "4EAA25", None),
+    ("git", "Git", "F05032", None),
+    ("jupyter", "Jupyter", "F37626", None),
+    ("pytorch", "PyTorch", "EE4C2C", None),
+    ("huggingface", "Hugging Face", "FFD21E", None),
+    ("scikitlearn", "scikit-learn", "F7931E", None),
+    ("opencv", "OpenCV", "5C3EE8", None),
+    ("pandas", "Pandas", "150458", "E70488"),
+    ("numpy", "NumPy", "013243", "4DABCF"),
+    ("ollama", "Ollama", "000000", "var(--dim)"),
+    ("kaggle", "Kaggle", "20BEFF", None),
+    ("fastapi", "FastAPI", "009688", None),
+    ("gin", "Gin", "008ECF", None),
+    ("react", "React", "61DAFB", None),
+    ("vite", "Vite", "646CFF", None),
+    ("docker", "Docker", "2496ED", None),
+    ("githubactions", "GH Actions", "2088FF", None),
+    ("sqlite", "SQLite", "003B57", "0F80CC"),
+    ("pytest", "pytest", "0A9EDC", None),
+]
+
+TILE_W, TILE_H, TILE_GAP, PER_ROW = 100, 74, 12, 8
+ICON = 36
+
+
+def _luma(hex_: str) -> float:
+    r, g, b = (int(hex_[i:i + 2], 16) for i in (0, 2, 4))
+    return 0.299 * r + 0.587 * g + 0.114 * b
+
+
+def techstack() -> str:
+    """A grid of brand tiles: icon chip, coloured outline, label."""
+    rows = -(-len(TECH) // PER_ROW)
+    w = PER_ROW * TILE_W + (PER_ROW - 1) * TILE_GAP + 16
+    h = rows * TILE_H + (rows - 1) * TILE_GAP + 16
+    tiles = []
+    for i, (slug, label, color, border) in enumerate(TECH):
+        x = 8 + (i % PER_ROW) * (TILE_W + TILE_GAP)
+        y = 8 + (i // PER_ROW) * (TILE_H + TILE_GAP)
+        stroke = border if border and border.startswith("var") else f"#{border or color}"
+        glyph = "#1F2328" if _luma(color) > 160 else "#FFFFFF"
+        ix = x + (TILE_W - ICON) / 2
+        s = 22 / 24
+        tiles.append(f"""  <g class="tile" style="animation-delay:{i * 0.04:.2f}s">
+    <rect x="{x + .75}" y="{y + .75}" width="{TILE_W - 1.5}" height="{TILE_H - 1.5}" rx="9" fill="var(--panel)" stroke="{stroke}" stroke-width="1.5"/>
+    <rect x="{ix}" y="{y + 9}" width="{ICON}" height="{ICON}" rx="8" fill="#{color}"/>
+    <path transform="translate({ix + 7} {y + 16}) scale({s:.4f})" fill="{glyph}" d="{ICONS[slug]}"/>
+    <text x="{x + TILE_W / 2}" y="{y + 62}" text-anchor="middle" class="lb">{label}</text>
+  </g>""")
+    body = "\n".join(tiles)
+    return f"""<svg xmlns="http://www.w3.org/2000/svg" width="{w}" height="{h}" viewBox="0 0 {w} {h}" role="img" aria-label="Tech stack: {', '.join(t[1] for t in TECH)}">
+  <style>
+    svg {{ --panel:#F6F8FA; --ink:#1F2328; --dim:#636C76 }}
+    @media (prefers-color-scheme: dark) {{
+      svg {{ --panel:#161B26; --ink:#E6EDF3; --dim:#8B949E }}
+    }}
+    .lb {{ font: 600 11px 'Segoe UI',Ubuntu,-apple-system,sans-serif; fill: var(--ink) }}
+    .tile {{ animation: rise .45s cubic-bezier(.2,.8,.2,1) both }}
+    @keyframes rise {{ from {{ opacity:0; transform: translateY(6px) }} to {{ opacity:1; transform:none }} }}
+    @media (prefers-reduced-motion: reduce) {{ .tile {{ animation: none }} }}
+  </style>
+{body}
+</svg>
+"""
+
+
 def main() -> None:
     ASSETS.mkdir(exist_ok=True)
     for name, svg in (("banner.svg", banner()),
                       ("divider.svg", divider()),
-                      ("signoff.svg", signoff())):
+                      ("signoff.svg", signoff()),
+                      ("techstack.svg", techstack())):
         (ASSETS / name).write_text(svg, encoding="utf-8")
         print(f"wrote assets/{name}")
 

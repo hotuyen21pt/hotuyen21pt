@@ -34,47 +34,18 @@ class TuyenHoNguyen:
 
 <div align="center"><img src="assets/divider.svg" width="100%" alt="" /></div>
 
-## 🧰 Tech Stack
+## 🧰 Technology arsenal
 
-#### Languages
-![Python](https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white)
-![Go](https://img.shields.io/badge/Go-00ADD8?style=flat-square&logo=go&logoColor=white)
-![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white)
-![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat-square&logo=javascript&logoColor=black)
-![SQL](https://img.shields.io/badge/SQL-4479A1?style=flat-square&logo=postgresql&logoColor=white)
-![Bash](https://img.shields.io/badge/Shell-4EAA25?style=flat-square&logo=gnubash&logoColor=white)
-![PowerShell](https://img.shields.io/badge/PowerShell-5391FE?style=flat-square&logo=powershell&logoColor=white)
+<img src="assets/techstack.svg" width="100%" alt="Python, Go, TypeScript, JavaScript, SQL, Shell, Git, Jupyter, PyTorch, Hugging Face, scikit-learn, OpenCV, Pandas, NumPy, Ollama, Kaggle, FastAPI, Gin, React, Vite, Docker, GitHub Actions, SQLite, pytest" />
 
-#### ML / Deep Learning
-![PyTorch](https://img.shields.io/badge/PyTorch-EE4C2C?style=flat-square&logo=pytorch&logoColor=white)
-![HuggingFace](https://img.shields.io/badge/🤗%20Transformers-FFD21E?style=flat-square&logoColor=black)
-![PEFT](https://img.shields.io/badge/PEFT%20%2F%20LoRA-FF6F00?style=flat-square)
-![TRL](https://img.shields.io/badge/GRPO%20%2F%20RLHF-8A2BE2?style=flat-square)
-![scikit-learn](https://img.shields.io/badge/scikit--learn-F7931E?style=flat-square&logo=scikitlearn&logoColor=white)
-![OpenCV](https://img.shields.io/badge/OpenCV-5C3EE8?style=flat-square&logo=opencv&logoColor=white)
-![Pandas](https://img.shields.io/badge/Pandas-150458?style=flat-square&logo=pandas&logoColor=white)
-![NumPy](https://img.shields.io/badge/NumPy-013243?style=flat-square&logo=numpy&logoColor=white)
-
-#### Models I work with
-![MedGemma](https://img.shields.io/badge/MedGemma--4B-4285F4?style=flat-square&logo=googlegemini&logoColor=white)
-![Qwen](https://img.shields.io/badge/Qwen3--8B-615CED?style=flat-square)
-![mT5](https://img.shields.io/badge/mT5%20%2F%20T5-FF4B4B?style=flat-square)
-![XLM-R](https://img.shields.io/badge/XLM--R%20%2F%20BERT-0096D6?style=flat-square)
-![CLIP](https://img.shields.io/badge/OpenCLIP-00B5AD?style=flat-square)
-![Faster R-CNN](https://img.shields.io/badge/Faster%20R--CNN-E34F26?style=flat-square)
-
-#### Serving & Infrastructure
-![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=flat-square&logo=fastapi&logoColor=white)
-![Gradio](https://img.shields.io/badge/Gradio-FF7C00?style=flat-square&logo=gradio&logoColor=white)
-![Gin](https://img.shields.io/badge/Gin-008ECF?style=flat-square&logo=go&logoColor=white)
-![React](https://img.shields.io/badge/React-61DAFB?style=flat-square&logo=react&logoColor=black)
-![Vite](https://img.shields.io/badge/Vite-646CFF?style=flat-square&logo=vite&logoColor=white)
-![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white)
-![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-2088FF?style=flat-square&logo=githubactions&logoColor=white)
-![Ollama](https://img.shields.io/badge/Ollama-000000?style=flat-square&logo=ollama&logoColor=white)
-![Kaggle](https://img.shields.io/badge/Kaggle%20GPU-20BEFF?style=flat-square&logo=kaggle&logoColor=white)
-![SQLite](https://img.shields.io/badge/SQLite-003B57?style=flat-square&logo=sqlite&logoColor=white)
-![pytest](https://img.shields.io/badge/pytest-0A9EDC?style=flat-square&logo=pytest&logoColor=white)
+<table>
+<tr><td><b>Languages</b></td><td>Python | Go | TypeScript | JavaScript | SQL | Shell | PowerShell</td></tr>
+<tr><td><b>ML &amp; deep learning</b></td><td>PyTorch | 🤗 Transformers | PEFT / LoRA | TRL (GRPO) | scikit-learn | OpenCV | Pandas | NumPy</td></tr>
+<tr><td><b>Models</b></td><td>MedGemma-4B · Qwen3-8B · mT5 / T5 · XLM-R / BERT · OpenCLIP · Faster R-CNN</td></tr>
+<tr><td><b>Serving &amp; infra</b></td><td>FastAPI | Gin | Gradio | React + Vite | Docker | GitHub Actions | Ollama | Kaggle GPU | SQLite | pytest</td></tr>
+<tr><td><b>Profile focus</b></td><td>Aspect sentiment quad prediction · Medical VQA · LLM fine-tuning · Vietnamese NLP</td></tr>
+<tr><td><b>GitHub signal</b></td><td><!--signal-->24 repositories · 4 stars · 414 contributions<!--/signal--></td></tr>
+</table>
 
 <div align="center"><img src="assets/divider.svg" width="100%" alt="" /></div>
 

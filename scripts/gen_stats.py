@@ -562,13 +562,28 @@ def jet_card(cal: dict) -> str:
 
 # -------------------------------------------------------------- README patch
 
-def patch_readme(repos: int) -> None:
+SIGNAL_RE = re.compile(r"<!--signal-->(.*?)<!--/signal-->")
+
+
+def patch_readme(repos: int, stars: int, contributions: int | None) -> None:
     path = ROOT / "README.md"
     text = path.read_text(encoding="utf-8")
     patched = re.sub(r"(badge/Repositories-)\d+", rf"\g<1>{repos}", text)
+
+    # The "GitHub signal" row under the tech stack. Without a calendar this run,
+    # keep the contribution count already in the README rather than blank it.
+    m = SIGNAL_RE.search(patched)
+    if m:
+        if contributions is None:
+            old = re.search(r"([\d,]+) contributions", m.group(1))
+            contributions = int(old.group(1).replace(",", "")) if old else 0
+        line = (f"{repos:,} repositories · {stars:,} stars · "
+                f"{contributions:,} contributions")
+        patched = patched[:m.start(1)] + line + patched[m.end(1):]
+
     if patched != text:
         path.write_text(patched, encoding="utf-8")
-        print(f"  README.md repository count -> {repos}")
+        print(f"  README.md -> {repos} repos, {stars} stars, {contributions} contributions")
 
 
 def main() -> None:
@@ -598,7 +613,8 @@ def main() -> None:
         missing = True
 
     if not FIXTURE:
-        patch_readme(data["repos"])
+        patch_readme(data["repos"], data["stars"],
+                     cal["totalContributions"] if cal else None)
 
     for name, count in list(data["langs"].items())[:8]:
         print(f"  {name:<18} {count:>10,} bytes")
