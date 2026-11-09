@@ -1,35 +1,58 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="400" height="278" viewBox="0 0 400 278" role="img" aria-label="Overview">
+<svg xmlns="http://www.w3.org/2000/svg" width="440" height="283" viewBox="0 0 440 283" role="img" aria-label="Overview">
   <style>
-    svg { --bg:#FFFFFF; --bd:#D8DEE4; --tx:#1F2328; --mu:#636C76; --ac:#0B6FD4; --hi:#7C4DFF; }
+    svg {
+      --bg:#FFFFFF; --panel:#F6F8FA; --bd:#D8DEE4; --tx:#1F2328; --mu:#636C76;
+      --ac:#0B6FD4; --hi:#6A3DE8;
+      --l0:#E7ECF2; --l1:#BDDCF5; --l2:#6FB7EB; --l3:#2E8FD6; --l4:#0B5FB8;
+    }
     @media (prefers-color-scheme: dark) {
-      svg { --bg:#0D1117; --bd:#1E3A52; --tx:#C9D1D9; --mu:#8B949E; --ac:#36BCF7; --hi:#9D7BFF; }
+      svg {
+        --bg:#0D1117; --panel:#111823; --bd:#1E3A52; --tx:#C9D1D9; --mu:#8B949E;
+        --ac:#36BCF7; --hi:#9D7BFF;
+        --l0:#161B22; --l1:#0E3A5C; --l2:#1569A3; --l3:#2E9BE0; --l4:#7FE3FF;
+      }
     }
 
-    .rise { opacity:0; animation: rise .55s cubic-bezier(.2,.8,.2,1) both; }
-    @keyframes rise { from { opacity:0; transform: translateY(8px) } to { opacity:1; transform:none } }
+    .mono { font: 400 12.5px 'JetBrains Mono','Cascadia Code','Fira Code',Consolas,'Liberation Mono',monospace }
+    .cmd  { font: 400 11px 'JetBrains Mono','Cascadia Code',Consolas,monospace; fill: var(--mu) }
+    .k    { fill: var(--mu) }
+    .v    { fill: var(--tx); font-weight: 700 }
+    .ac   { fill: var(--ac) }
+    .s    { font: 400 10.5px 'JetBrains Mono','Cascadia Code',Consolas,monospace; fill: var(--mu) }
+    .big  { font: 700 17px 'Segoe UI',Ubuntu,-apple-system,sans-serif; fill: var(--ac) }
+    .rise { opacity:0; animation: rise .5s cubic-bezier(.2,.8,.2,1) both }
+    @keyframes rise { from { opacity:0; transform: translateY(6px) } to { opacity:1; transform:none } }
+    .blink { animation: blink 1.1s steps(1) infinite }
+    @keyframes blink { 0%,50% { opacity:1 } 51%,100% { opacity:0 } }
     @media (prefers-reduced-motion: reduce) {
-      .rise { animation:none; opacity:1 } .wipe { animation:none; width:100% } .shine { display:none }
+      .rise,.blink,.wipe,.shine,.fly,.col,.beam { animation: none !important; opacity: 1 }
+      .wipe { width: 100% } .shine,.beam { display: none }
     }
-
-    .t { font: 700 16px 'Segoe UI', Ubuntu, -apple-system, sans-serif; fill: var(--ac); letter-spacing:.3px }
-    .k { font: 400 14px 'Segoe UI', Ubuntu, -apple-system, sans-serif; fill: var(--tx) }
-    .v { font: 700 14px 'Segoe UI', Ubuntu, -apple-system, sans-serif; fill: var(--ac) }
-    .s { font: 400 11px 'Segoe UI', Ubuntu, -apple-system, sans-serif; fill: var(--mu) }
-  </style>
+</style>
   <defs>
     <linearGradient id="edge" x1="0" y1="0" x2="1" y2="0">
       <stop offset="0%" stop-color="var(--ac)"/><stop offset="100%" stop-color="var(--hi)"/>
     </linearGradient>
+    <clipPath id="card"><rect x="0" y="0" width="440" height="283" rx="12"/></clipPath>
   </defs>
-  <rect x="0.5" y="0.5" width="399" height="277" rx="12" fill="var(--bg)" stroke="var(--bd)"/>
-  <rect x="0" y="0" width="400" height="3" rx="1.5" fill="url(#edge)"/>
-  <text x="24" y="38" class="t">Overview</text>
-  <g class="rise" style="animation-delay:0.00s"><circle cx="28" cy="67" r="2.5" fill="var(--ac)" opacity=".55"/><text x="40" y="72" class="k">Public repositories</text><text x="376" y="72" class="v" text-anchor="end">24</text></g>
-  <g class="rise" style="animation-delay:0.07s"><circle cx="28" cy="93" r="2.5" fill="var(--ac)" opacity=".55"/><text x="40" y="98" class="k">Stars earned</text><text x="376" y="98" class="v" text-anchor="end">4</text></g>
-  <g class="rise" style="animation-delay:0.14s"><circle cx="28" cy="119" r="2.5" fill="var(--ac)" opacity=".55"/><text x="40" y="124" class="k">Forks</text><text x="376" y="124" class="v" text-anchor="end">5</text></g>
-  <g class="rise" style="animation-delay:0.21s"><circle cx="28" cy="145" r="2.5" fill="var(--ac)" opacity=".55"/><text x="40" y="150" class="k">Followers</text><text x="376" y="150" class="v" text-anchor="end">1</text></g>
-  <g class="rise" style="animation-delay:0.28s"><circle cx="28" cy="171" r="2.5" fill="var(--ac)" opacity=".55"/><text x="40" y="176" class="k">Languages in use</text><text x="376" y="176" class="v" text-anchor="end">10</text></g>
-  <g class="rise" style="animation-delay:0.35s"><circle cx="28" cy="197" r="2.5" fill="var(--ac)" opacity=".55"/><text x="40" y="202" class="k">Code on GitHub</text><text x="376" y="202" class="v" text-anchor="end">161 MB</text></g>
-  <g class="rise" style="animation-delay:0.42s"><circle cx="28" cy="223" r="2.5" fill="var(--ac)" opacity=".55"/><text x="40" y="228" class="k">Member since</text><text x="376" y="228" class="v" text-anchor="end">2022 · 3 yrs</text></g>
-  <text x="24" y="260" class="s">across 24 source repositories · regenerated daily</text>
+  <g clip-path="url(#card)">
+    <rect width="440" height="283" fill="var(--bg)"/>
+    <rect width="440" height="34" fill="var(--panel)"/>
+    <rect y="33" width="440" height="1" fill="var(--bd)"/>
+    <rect width="440" height="2" fill="url(#edge)"/>
+    <circle cx="20" cy="18" r="4" fill="#FF5F57"/>
+    <circle cx="34" cy="18" r="4" fill="#FEBC2E"/>
+    <circle cx="48" cy="18" r="4" fill="#28C840"/>
+    <text x="66" y="22" class="cmd">~/hotuyen21pt $ gh stats --me</text>
+    <g class="rise" style="animation-delay:0.00s"><text x="24" y="62" class="mono ac">&#9656;</text><text x="42" y="62" class="mono k">public repos</text><line x1="143" y1="58" x2="399" y2="58" stroke="var(--bd)" stroke-width="1" stroke-dasharray="1 4"/><text x="416" y="62" class="mono v" text-anchor="end">24</text></g>
+    <g class="rise" style="animation-delay:0.06s"><text x="24" y="87" class="mono ac">&#9656;</text><text x="42" y="87" class="mono k">stars earned</text><line x1="143" y1="83" x2="406" y2="83" stroke="var(--bd)" stroke-width="1" stroke-dasharray="1 4"/><text x="416" y="87" class="mono v" text-anchor="end">4</text></g>
+    <g class="rise" style="animation-delay:0.12s"><text x="24" y="112" class="mono ac">&#9656;</text><text x="42" y="112" class="mono k">forks</text><line x1="90" y1="108" x2="406" y2="108" stroke="var(--bd)" stroke-width="1" stroke-dasharray="1 4"/><text x="416" y="112" class="mono v" text-anchor="end">5</text></g>
+    <g class="rise" style="animation-delay:0.18s"><text x="24" y="137" class="mono ac">&#9656;</text><text x="42" y="137" class="mono k">followers</text><line x1="120" y1="133" x2="406" y2="133" stroke="var(--bd)" stroke-width="1" stroke-dasharray="1 4"/><text x="416" y="137" class="mono v" text-anchor="end">1</text></g>
+    <g class="rise" style="animation-delay:0.24s"><text x="24" y="162" class="mono ac">&#9656;</text><text x="42" y="162" class="mono k">languages</text><line x1="120" y1="158" x2="399" y2="158" stroke="var(--bd)" stroke-width="1" stroke-dasharray="1 4"/><text x="416" y="162" class="mono v" text-anchor="end">10</text></g>
+    <g class="rise" style="animation-delay:0.30s"><text x="24" y="187" class="mono ac">&#9656;</text><text x="42" y="187" class="mono k">code on github</text><line x1="158" y1="183" x2="368" y2="183" stroke="var(--bd)" stroke-width="1" stroke-dasharray="1 4"/><text x="416" y="187" class="mono v" text-anchor="end">161 MB</text></g>
+    <g class="rise" style="animation-delay:0.36s"><text x="24" y="212" class="mono ac">&#9656;</text><text x="42" y="212" class="mono k">member since</text><line x1="143" y1="208" x2="346" y2="208" stroke="var(--bd)" stroke-width="1" stroke-dasharray="1 4"/><text x="416" y="212" class="mono v" text-anchor="end">2022 - 3y</text></g>
+    <text x="24" y="241" class="s"># regenerated daily - no third-party service</text>
+    <rect class="blink" x="24" y="253" width="8" height="14" fill="var(--ac)"/>
+  </g>
+  <rect x="0.5" y="0.5" width="439" height="282" rx="12" fill="none" stroke="var(--bd)"/>
 </svg>
