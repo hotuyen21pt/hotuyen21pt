@@ -7,17 +7,19 @@ This script talks to the GitHub REST and GraphQL APIs itself and writes:
 
     assets/stats.svg             terminal telemetry panel  (REST)
     assets/top-langs.svg         language loadout          (REST)
-    assets/contribution-jet.svg  contribution grid + jet   (GraphQL)
+    assets/contribution-jet.svg  contribution grid + jet
 
 and rewrites the repository count in README.md so it cannot go stale.
 
-    python scripts/gen_stats.py                 # REST only; the jet is skipped
+    python scripts/gen_stats.py                 # works with no credentials
     GITHUB_TOKEN=... python scripts/gen_stats.py
     python scripts/gen_stats.py --fixture       # synthetic data into preview/
 
-The contribution calendar is GraphQL-only and needs a token. A classic PAT with
-`read:user` in secrets.PROFILE_TOKEN is the guaranteed path; the Actions
-GITHUB_TOKEN is tried first and usually works for public contributions.
+The contribution calendar comes from GraphQL when a token is available and
+from the public contributions page otherwise, so the card renders either way.
+An earlier version was GraphQL-only; the Actions GITHUB_TOKEN could not read
+the calendar, the run failed, and the README was left pointing at a card that
+had never been written.
 """
 
 from __future__ import annotations
@@ -132,10 +134,63 @@ query($login:String!) {
 """
 
 
+TD_RE = re.compile(r'<td[^>]*class="[^"]*ContributionCalendar-day[^"]*"[^>]*>')
+TIP_RE = re.compile(r'<tool-tip[^>]*\bfor="([^"]+)"[^>]*>([^<]*)</tool-tip>')
+ATTR_RE = re.compile(r'(data-date|data-level|id)="([^"]*)"')
+COUNT_RE = re.compile(r"^(?:(\d+)|No)\s+contribution")
+
+
+def html_calendar():
+    """The same twelve months, scraped from the public contributions page.
+
+    GraphQL is the better source but it refuses anonymous callers, which makes
+    the card depend on a secret the repo may not have. This page is public, is
+    the one GitHub renders on the profile itself, and needs no token - so the
+    card can never silently vanish for want of a credential.
+    """
+    url = f"https://github.com/users/{USER}/contributions"
+    req = urllib.request.Request(url, headers={"User-Agent": f"{USER}-profile-stats"})
+    try:
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            page = resp.read().decode("utf-8", "replace")
+    except (urllib.error.HTTPError, urllib.error.URLError) as exc:
+        print(f"! contributions page unreachable: {exc}")
+        return None
+
+    tips = {cell: text for cell, text in TIP_RE.findall(page)}
+    days = {}
+    for tag in TD_RE.findall(page):
+        attrs = dict(ATTR_RE.findall(tag))
+        iso = attrs.get("data-date")
+        if not iso:
+            continue
+        m = COUNT_RE.match(tips.get(attrs.get("id", ""), ""))
+        days[iso] = int(m.group(1)) if m and m.group(1) else 0
+
+    if not days:
+        print("! contributions page carried no day cells - markup may have changed")
+        return None
+
+    # Re-shape into the week/day nesting the GraphQL reply uses, so the card
+    # renderer never has to know which source it got.
+    weeks, week = [], []
+    for iso in sorted(days):
+        d = date.fromisoformat(iso)
+        weekday = (d.weekday() + 1) % 7          # 0 = Sunday, as GitHub counts
+        if weekday == 0 and week:
+            weeks.append({"contributionDays": week})
+            week = []
+        week.append({"date": iso, "weekday": weekday, "contributionCount": days[iso]})
+    if week:
+        weeks.append({"contributionDays": week})
+
+    print(f"read {len(days)} days from the public contributions page")
+    return {"totalContributions": sum(days.values()), "weeks": weeks}
+
+
 def graphql_calendar():
     """Twelve months of contributions, or None when the token cannot see them."""
     if not TOKEN:
-        print("! no GITHUB_TOKEN / PROFILE_TOKEN - skipping the contribution card")
         return None
     body = json.dumps({"query": GQL, "variables": {"login": USER}}).encode()
     req = urllib.request.Request("https://api.github.com/graphql", data=body, headers={
@@ -525,7 +580,10 @@ def main() -> None:
     print(f"wrote {out}/stats.svg and {out}/top-langs.svg")
 
     jet = ASSETS / "contribution-jet.svg"
-    cal = fixture_calendar() if FIXTURE else graphql_calendar()
+    if FIXTURE:
+        cal = fixture_calendar()
+    else:
+        cal = graphql_calendar() or html_calendar()
     missing = False
     if cal:
         jet.write_text(jet_card(cal), encoding="utf-8")

@@ -4,9 +4,9 @@ name: Update stat cards
 # answer 503 and 402, so every card is rendered here instead and committed as a
 # plain SVG the README links by relative path.
 #
-# The contribution grid comes from GraphQL, which needs a token. GITHUB_TOKEN
-# normally covers public contributions; if the job logs "GraphQL 401/403",
-# add a classic PAT with `read:user` as the PROFILE_TOKEN secret.
+# The contribution grid prefers GraphQL and falls back to the public
+# contributions page, so it renders with or without a token. Setting
+# PROFILE_TOKEN to a classic PAT with `read:user` keeps it on the API path.
 
 on:
   push:
@@ -40,7 +40,10 @@ jobs:
           PROFILE_USER: ${{ github.repository_owner }}
         run: python scripts/gen_stats.py
 
+      # always(): a card that fails to render must not also cost us the
+      # refresh of the cards that did. The render step still reports red.
       - name: Commit if changed
+        if: always()
         run: |
           git config user.name  'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
