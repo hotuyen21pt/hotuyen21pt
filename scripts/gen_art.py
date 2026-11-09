@@ -483,7 +483,7 @@ CHIP_CHARS = 30                 # longest repo name a chip shows
 REVEAL = 0.8                    # seconds for the panel to unroll
 
 FONT = "'Segoe UI',Ubuntu,-apple-system,sans-serif"
-MONO = "'JetBrains Mono','Cascadia Code',Consolas,monospace"
+MONO_FONT = "'JetBrains Mono','Cascadia Code',Consolas,monospace"
 EASE = "cubic-bezier(.22,1,.36,1)"     # one easing curve everywhere keeps it calm
 
 PALETTE_CSS = """
@@ -531,7 +531,7 @@ def strip(title: str, techs: list) -> str:
     head = 26
     h = head + MINI_H + 2
     out = [
-        f'<text x="2" y="16" style="font:800 12px {MONO};letter-spacing:1.6px" fill="var(--ac)">{escape(title)}</text>',
+        f'<text x="2" y="16" style="font:800 12px {MONO_FONT};letter-spacing:1.6px" fill="var(--ac)">{escape(title)}</text>',
         f'<text x="{ROW_W - 2}" y="16" text-anchor="end" style="font:600 10.5px {FONT}" fill="var(--dim)">'
         f'{len(techs)} tools · click to open</text>',
     ]
@@ -654,8 +654,8 @@ def panel(slug: str, title: str, techs: list) -> str:
   </defs>
   <style>{PALETTE_CSS}
     .d {{ font: 400 11.5px {FONT}; fill: var(--tx) }}
-    .k {{ font: 700 8.5px {MONO}; letter-spacing: 1.4px }}
-    .c {{ font: 500 9.5px {MONO}; fill: var(--ink) }}
+    .k {{ font: 700 8.5px {MONO_FONT}; letter-spacing: 1.4px }}
+    .c {{ font: 500 9.5px {MONO_FONT}; fill: var(--ink) }}
 
     /* Entrance: the panel unrolls like a drawer, cards rise in as it reaches them. */
     .unroll {{ animation: unroll {REVEAL}s {EASE} both }}
