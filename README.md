@@ -36,7 +36,7 @@ class TuyenHoNguyen:
 
 ## 🧰 Technology arsenal
 
-<img src="assets/techstack.svg" width="100%" alt="Python, Go, TypeScript, JavaScript, SQL, Shell, Git, Jupyter, PyTorch, Hugging Face, scikit-learn, OpenCV, Pandas, NumPy, Ollama, Kaggle, FastAPI, Gin, React, Vite, Docker, GitHub Actions, SQLite, pytest" />
+<a href="#-technology-arsenal"><img src="assets/techstack.svg" width="100%" alt="Python, Go, TypeScript, JavaScript, SQL, Shell, Git, Jupyter, PyTorch, Hugging Face, scikit-learn, OpenCV, Pandas, NumPy, Ollama, Kaggle, FastAPI, Gin, React, Vite, Docker, GitHub Actions, SQLite, pytest" /></a>
 
 <table>
 <tr><td><b>Languages</b></td><td>Python | Go | TypeScript | JavaScript | SQL | Shell | PowerShell</td></tr>
