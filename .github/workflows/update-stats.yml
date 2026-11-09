@@ -1,8 +1,12 @@
 name: Update stat cards
 
-# The public github-readme-stats instances answer 503, and the trophy and
-# activity-graph deployments answer 402, so the cards are rendered here instead
-# and committed as plain SVG files the README links by relative path.
+# The public github-readme-stats, streak-stats and activity-graph deployments
+# answer 503 and 402, so every card is rendered here instead and committed as a
+# plain SVG the README links by relative path.
+#
+# The contribution grid comes from GraphQL, which needs a token. GITHUB_TOKEN
+# normally covers public contributions; if the job logs "GraphQL 401/403",
+# add a classic PAT with `read:user` as the PROFILE_TOKEN secret.
 
 on:
   push:
@@ -31,6 +35,7 @@ jobs:
 
       - name: Render SVG cards
         env:
+          PROFILE_TOKEN: ${{ secrets.PROFILE_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PROFILE_USER: ${{ github.repository_owner }}
         run: python scripts/gen_stats.py
@@ -39,7 +44,7 @@ jobs:
         run: |
           git config user.name  'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add assets/stats.svg assets/top-langs.svg
+          git add -A assets README.md
           git diff --staged --quiet && echo 'no change' && exit 0
           git commit -m 'chore: refresh stat cards'
           git push

@@ -6,7 +6,6 @@
 
 <a href="https://github.com/hotuyen21pt?tab=repositories"><img src="https://img.shields.io/badge/Repositories-24-36BCF7?style=for-the-badge&logo=github&logoColor=white" alt="repos" /></a>
 <a href="mailto:tuyennh2102@gmail.com"><img src="https://img.shields.io/badge/Email-tuyennh2102%40gmail.com-D14836?style=for-the-badge&logo=gmail&logoColor=white" alt="email" /></a>
-<img src="https://komarev.com/ghpvc/?username=hotuyen21pt&style=for-the-badge&color=36BCF7&label=PROFILE+VIEWS" alt="views" />
 
 <img src="assets/divider.svg" width="100%" alt="" />
 
@@ -222,27 +221,21 @@ matches. FastAPI endpoint, drag-and-drop web UI, Dockerised, with
 
 <div align="center"><img src="assets/divider.svg" width="100%" alt="" /></div>
 
-## 📊 GitHub Stats
+## 📊 Telemetry
 
 <div align="center">
+
+<img src="assets/contribution-jet.svg" alt="contribution activity for the last 12 months" width="100%" />
+
+<br/>
 
 <img src="assets/stats.svg" alt="overview" />
 <img src="assets/top-langs.svg" alt="most used languages" />
 
 <br/>
 
-<img src="https://streak-stats.demolab.com?user=hotuyen21pt&theme=tokyonight&hide_border=true&border_radius=12&background=0D1117&ring=36BCF7&fire=7C4DFF&currStreakLabel=36BCF7" alt="streak" />
-
-<br/><br/>
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/hotuyen21pt/hotuyen21pt/output/github-snake-dark.svg" />
-  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/hotuyen21pt/hotuyen21pt/output/github-snake-light.svg" />
-  <img src="https://raw.githubusercontent.com/hotuyen21pt/hotuyen21pt/output/github-snake-dark.svg" alt="contribution snake" width="100%" />
-</picture>
-
-<sub>The two cards above are rendered by <a href="scripts/gen_stats.py"><code>scripts/gen_stats.py</code></a> and committed to this repo —
-no third-party service to go down.</sub>
+<sub>All three cards are rendered by <a href="scripts/gen_stats.py"><code>scripts/gen_stats.py</code></a> straight from the
+GitHub API and committed to this repo — nothing here is served by a third party that can go down.</sub>
 
 </div>
 
@@ -266,5 +259,9 @@ no third-party service to go down.</sub>
 <img src="assets/divider.svg" width="100%" alt="" />
 
 > *"Faithfulness to the paper matters more than peak F1 — until you can prove otherwise."*
+
+<br/>
+
+<img src="assets/signoff.svg" alt="Tuyen Nguyen" width="560" />
 
 </div>

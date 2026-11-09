@@ -1,13 +1,23 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="900" height="6" viewBox="0 0 900 6" role="presentation">
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="8" viewBox="0 0 900 8" role="presentation">
   <defs>
     <linearGradient id="g" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%"   stop-color="#36BCF7" stop-opacity="0"/>
-      <stop offset="25%"  stop-color="#36BCF7" stop-opacity="0.9"/>
-      <stop offset="55%"  stop-color="#7C4DFF" stop-opacity="0.9"/>
+      <stop offset="0%" stop-color="#36BCF7" stop-opacity="0"/>
+      <stop offset="25%" stop-color="#36BCF7" stop-opacity="0.85"/>
+      <stop offset="55%" stop-color="#7C4DFF" stop-opacity="0.85"/>
       <stop offset="100%" stop-color="#36BCF7" stop-opacity="0"/>
       <animate attributeName="x1" values="-0.6;0.6;-0.6" dur="9s" repeatCount="indefinite"/>
-      <animate attributeName="x2" values="0.4;1.6;0.4"   dur="9s" repeatCount="indefinite"/>
+      <animate attributeName="x2" values="0.4;1.6;0.4" dur="9s" repeatCount="indefinite"/>
     </linearGradient>
+    <radialGradient id="blip">
+      <stop offset="0%" stop-color="#9FE8FF" stop-opacity="1"/>
+      <stop offset="100%" stop-color="#36BCF7" stop-opacity="0"/>
+    </radialGradient>
   </defs>
-  <rect y="2" width="900" height="2" rx="1" fill="url(#g)"/>
+  <style>
+    .blip { animation: run 6s cubic-bezier(.45,0,.55,1) infinite }
+    @keyframes run { 0% { transform: translateX(-30px) } 100% { transform: translateX(930px) } }
+    @media (prefers-reduced-motion: reduce) { .blip { display: none } }
+  </style>
+  <rect y="3" width="900" height="2" rx="1" fill="url(#g)"/>
+  <circle class="blip" cx="0" cy="4" r="7" fill="url(#blip)"/>
 </svg>

@@ -1,14 +1,23 @@
 #!/usr/bin/env python3
-"""Render the profile stat cards as SVG files committed to this repo.
+"""Render the profile cards as SVG files committed to this repo.
 
-The public github-readme-stats / trophy deployments answer 503 and 402, so the
-README cannot depend on them. This script talks to the GitHub REST API itself
-and writes assets/stats.svg and assets/top-langs.svg, which the README embeds
-by relative path. .github/workflows/update-stats.yml re-runs it on every push
-and once a day.
+The public github-readme-stats / streak-stats / activity-graph deployments
+answer 503 and 402, so nothing on the README is allowed to depend on them.
+This script talks to the GitHub REST and GraphQL APIs itself and writes:
 
-    python scripts/gen_stats.py            # unauthenticated, 60 req/h
+    assets/stats.svg             terminal telemetry panel  (REST)
+    assets/top-langs.svg         language loadout          (REST)
+    assets/contribution-jet.svg  contribution grid + jet   (GraphQL)
+
+and rewrites the repository count in README.md so it cannot go stale.
+
+    python scripts/gen_stats.py                 # REST only; the jet is skipped
     GITHUB_TOKEN=... python scripts/gen_stats.py
+    python scripts/gen_stats.py --fixture       # synthetic data into preview/
+
+The contribution calendar is GraphQL-only and needs a token. A classic PAT with
+`read:user` in secrets.PROFILE_TOKEN is the guaranteed path; the Actions
+GITHUB_TOKEN is tried first and usually works for public contributions.
 """
 
 from __future__ import annotations
@@ -16,14 +25,21 @@ from __future__ import annotations
 import json
 import os
 import pathlib
+import random
+import re
 import sys
 import urllib.error
 import urllib.request
-from datetime import datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 
 USER = os.environ.get("PROFILE_USER", "hotuyen21pt")
+TOKEN = os.environ.get("PROFILE_TOKEN") or os.environ.get("GITHUB_TOKEN")
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-ASSETS = ROOT / "assets"
+FIXTURE = "--fixture" in sys.argv
+# Synthetic runs render into preview/, which is gitignored. Pointing them at
+# assets/ would overwrite real cards with invented numbers, and a rate-limited
+# retry would then have no way to put the truth back.
+ASSETS = ROOT / ("preview" if FIXTURE else "assets")
 
 # Vendored or generated output rather than code I wrote; counting it would make
 # the card claim a language I don't work in.
@@ -46,22 +62,46 @@ LANG_COLORS = {
     "Rust": "#DEA584",
 }
 
-# Light defaults, overridden under a dark colour scheme.
+MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+          "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+
+# Light defaults, overridden under a dark colour scheme. Every card shares
+# these names so the three of them stay in one visual family.
 THEME = """
-    svg { --bg:#FFFFFF; --bd:#D8DEE4; --tx:#1F2328; --mu:#636C76; --ac:#0B6FD4; --hi:#7C4DFF; }
+    svg {
+      --bg:#FFFFFF; --panel:#F6F8FA; --bd:#D8DEE4; --tx:#1F2328; --mu:#636C76;
+      --ac:#0B6FD4; --hi:#6A3DE8;
+      --l0:#E7ECF2; --l1:#BDDCF5; --l2:#6FB7EB; --l3:#2E8FD6; --l4:#0B5FB8;
+    }
     @media (prefers-color-scheme: dark) {
-      svg { --bg:#0D1117; --bd:#1E3A52; --tx:#C9D1D9; --mu:#8B949E; --ac:#36BCF7; --hi:#9D7BFF; }
+      svg {
+        --bg:#0D1117; --panel:#111823; --bd:#1E3A52; --tx:#C9D1D9; --mu:#8B949E;
+        --ac:#36BCF7; --hi:#9D7BFF;
+        --l0:#161B22; --l1:#0E3A5C; --l2:#1569A3; --l3:#2E9BE0; --l4:#7FE3FF;
+      }
     }
 """
 
-MOTION = """
-    .rise { opacity:0; animation: rise .55s cubic-bezier(.2,.8,.2,1) both; }
-    @keyframes rise { from { opacity:0; transform: translateY(8px) } to { opacity:1; transform:none } }
+BASE_CSS = """
+    .mono { font: 400 12.5px 'JetBrains Mono','Cascadia Code','Fira Code',Consolas,'Liberation Mono',monospace }
+    .cmd  { font: 400 11px 'JetBrains Mono','Cascadia Code',Consolas,monospace; fill: var(--mu) }
+    .k    { fill: var(--mu) }
+    .v    { fill: var(--tx); font-weight: 700 }
+    .ac   { fill: var(--ac) }
+    .s    { font: 400 10.5px 'JetBrains Mono','Cascadia Code',Consolas,monospace; fill: var(--mu) }
+    .big  { font: 700 17px 'Segoe UI',Ubuntu,-apple-system,sans-serif; fill: var(--ac) }
+    .rise { opacity:0; animation: rise .5s cubic-bezier(.2,.8,.2,1) both }
+    @keyframes rise { from { opacity:0; transform: translateY(6px) } to { opacity:1; transform:none } }
+    .blink { animation: blink 1.1s steps(1) infinite }
+    @keyframes blink { 0%,50% { opacity:1 } 51%,100% { opacity:0 } }
     @media (prefers-reduced-motion: reduce) {
-      .rise { animation:none; opacity:1 } .wipe { animation:none; width:100% } .shine { display:none }
+      .rise,.blink,.wipe,.shine,.fly,.col,.beam { animation: none !important; opacity: 1 }
+      .wipe { width: 100% } .shine,.beam { display: none }
     }
 """
 
+
+# ---------------------------------------------------------------- API access
 
 def api(path: str):
     url = path if path.startswith("http") else f"https://api.github.com{path}"
@@ -69,15 +109,83 @@ def api(path: str):
         "Accept": "application/vnd.github+json",
         "User-Agent": f"{USER}-profile-stats",
     })
-    token = os.environ.get("GITHUB_TOKEN")
-    if token:
-        req.add_header("Authorization", f"Bearer {token}")
+    if TOKEN:
+        req.add_header("Authorization", f"Bearer {TOKEN}")
     try:
         with urllib.request.urlopen(req, timeout=30) as resp:
             return json.load(resp)
     except urllib.error.HTTPError as exc:
         sys.exit(f"GitHub API {exc.code} on {url}: {exc.read()[:200]!r}")
 
+
+GQL = """
+query($login:String!) {
+  user(login:$login) {
+    contributionsCollection {
+      contributionCalendar {
+        totalContributions
+        weeks { contributionDays { date weekday contributionCount } }
+      }
+    }
+  }
+}
+"""
+
+
+def graphql_calendar():
+    """Twelve months of contributions, or None when the token cannot see them."""
+    if not TOKEN:
+        print("! no GITHUB_TOKEN / PROFILE_TOKEN - skipping the contribution card")
+        return None
+    body = json.dumps({"query": GQL, "variables": {"login": USER}}).encode()
+    req = urllib.request.Request("https://api.github.com/graphql", data=body, headers={
+        "Authorization": f"Bearer {TOKEN}",
+        "Content-Type": "application/json",
+        "User-Agent": f"{USER}-profile-stats",
+    })
+    try:
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            payload = json.load(resp)
+    except urllib.error.HTTPError as exc:
+        print(f"! GraphQL {exc.code}: {exc.read()[:200]!r} - skipping the contribution card")
+        return None
+    if payload.get("errors"):
+        print(f"! GraphQL errors: {payload['errors']} - skipping the contribution card")
+        return None
+    return payload["data"]["user"]["contributionsCollection"]["contributionCalendar"]
+
+
+# ------------------------------------------------------------------ fixtures
+
+def fixture_stats() -> dict:
+    return {"repos": 24, "stars": 7, "forks": 3, "followers": 11,
+            "langs": {"Python": 4_100_000, "Jupyter Notebook": 2_300_000,
+                      "TypeScript": 410_000, "Go": 260_000, "TeX": 180_000,
+                      "HTML": 90_000, "CSS": 52_000, "Shell": 21_000},
+            "kb": 512_000, "since": 2021, "years": 4}
+
+
+def fixture_calendar() -> dict:
+    rng = random.Random(7)
+    end = date.today()
+    start = end - timedelta(days=364)
+    start -= timedelta(days=(start.weekday() + 1) % 7)  # back to a Sunday
+    weeks, day, total = [], start, 0
+    while day <= end:
+        days = []
+        for _ in range(7):
+            n = 0 if rng.random() < 0.34 else rng.randint(1, 18)
+            if day > end:
+                n = 0
+            days.append({"date": day.isoformat(), "weekday": (day.weekday() + 1) % 7,
+                         "contributionCount": n})
+            total += n
+            day += timedelta(days=1)
+        weeks.append({"contributionDays": days})
+    return {"totalContributions": total, "weeks": weeks}
+
+
+# -------------------------------------------------------------- data shaping
 
 def collect() -> dict:
     user = api(f"/users/{USER}")
@@ -109,108 +217,337 @@ def collect() -> dict:
     }
 
 
+def flatten(cal: dict) -> list[dict]:
+    today = date.today().isoformat()
+    return [d for w in cal["weeks"] for d in w["contributionDays"] if d["date"] <= today]
+
+
+def streaks(days: list[dict]) -> dict:
+    best = run = 0
+    for d in days:
+        run = run + 1 if d["contributionCount"] else 0
+        best = max(best, run)
+
+    # A quiet today does not break the streak until the day is over.
+    tail = days[:-1] if days and days[-1]["contributionCount"] == 0 else days
+    current = 0
+    for d in reversed(tail):
+        if not d["contributionCount"]:
+            break
+        current += 1
+
+    peak = max(days, key=lambda d: d["contributionCount"]) if days else {"date": "-", "contributionCount": 0}
+    active = sum(1 for d in days if d["contributionCount"])
+    return {"current": current, "longest": best, "peak": peak, "active": active}
+
+
+def levels(days: list[dict]) -> dict[str, int]:
+    """Bucket each day 0-4 against the quartiles of its own non-empty days."""
+    hot = sorted(d["contributionCount"] for d in days if d["contributionCount"])
+    if not hot:
+        return {d["date"]: 0 for d in days}
+    q = [hot[int(len(hot) * f)] for f in (0.25, 0.55, 0.85)]
+    out = {}
+    for d in days:
+        n = d["contributionCount"]
+        out[d["date"]] = 0 if n == 0 else 1 + sum(n > t for t in q)
+    return out
+
+
 def esc(s: str) -> str:
     return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
 
-def frame(width: int, height: int, title: str, body: str, extra_css: str = "") -> str:
+# ----------------------------------------------------------------- SVG frame
+
+def window(width: int, height: int, title: str, command: str, body: str, extra_css: str = "") -> str:
+    """A terminal-style panel: title bar, traffic lights, prompt, then body."""
     return f"""<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}" role="img" aria-label="{esc(title)}">
-  <style>{THEME}{MOTION}{extra_css}
-    .t {{ font: 700 16px 'Segoe UI', Ubuntu, -apple-system, sans-serif; fill: var(--ac); letter-spacing:.3px }}
-    .k {{ font: 400 14px 'Segoe UI', Ubuntu, -apple-system, sans-serif; fill: var(--tx) }}
-    .v {{ font: 700 14px 'Segoe UI', Ubuntu, -apple-system, sans-serif; fill: var(--ac) }}
-    .s {{ font: 400 11px 'Segoe UI', Ubuntu, -apple-system, sans-serif; fill: var(--mu) }}
-  </style>
+  <style>{THEME}{BASE_CSS}{extra_css}</style>
   <defs>
     <linearGradient id="edge" x1="0" y1="0" x2="1" y2="0">
       <stop offset="0%" stop-color="var(--ac)"/><stop offset="100%" stop-color="var(--hi)"/>
     </linearGradient>
+    <clipPath id="card"><rect x="0" y="0" width="{width}" height="{height}" rx="12"/></clipPath>
   </defs>
-  <rect x="0.5" y="0.5" width="{width - 1}" height="{height - 1}" rx="12" fill="var(--bg)" stroke="var(--bd)"/>
-  <rect x="0" y="0" width="{width}" height="3" rx="1.5" fill="url(#edge)"/>
-  <text x="24" y="38" class="t">{esc(title)}</text>
+  <g clip-path="url(#card)">
+    <rect width="{width}" height="{height}" fill="var(--bg)"/>
+    <rect width="{width}" height="34" fill="var(--panel)"/>
+    <rect y="33" width="{width}" height="1" fill="var(--bd)"/>
+    <rect width="{width}" height="2" fill="url(#edge)"/>
+    <circle cx="20" cy="18" r="4" fill="#FF5F57"/>
+    <circle cx="34" cy="18" r="4" fill="#FEBC2E"/>
+    <circle cx="48" cy="18" r="4" fill="#28C840"/>
+    <text x="66" y="22" class="cmd">{esc(command)}</text>
 {body}
+  </g>
+  <rect x="0.5" y="0.5" width="{width - 1}" height="{height - 1}" rx="12" fill="none" stroke="var(--bd)"/>
 </svg>
 """
 
 
+# ------------------------------------------------------------------ the cards
+
 def stats_card(d: dict) -> str:
     rows = [
-        ("Public repositories", str(d["repos"])),
-        ("Stars earned", str(d["stars"])),
-        ("Forks", str(d["forks"])),
-        ("Followers", str(d["followers"])),
-        ("Languages in use", str(len(d["langs"]))),
-        ("Code on GitHub", f"{d['kb'] / 1024:.0f} MB"),
-        ("Member since", f"{d['since']} · {d['years']} yrs"),
+        ("public repos",   str(d["repos"])),
+        ("stars earned",   str(d["stars"])),
+        ("forks",          str(d["forks"])),
+        ("followers",      str(d["followers"])),
+        ("languages",      str(len(d["langs"]))),
+        ("code on github", f"{d['kb'] / 1024:.0f} MB"),
+        ("member since",   f"{d['since']} - {d['years']}y"),
     ]
-    out = []
+    w, out = 440, []
     for i, (key, val) in enumerate(rows):
-        y = 72 + i * 26
+        y = 62 + i * 25
+        kw = 10 + len(key) * 7.6          # where the key text ends
+        vw = len(val) * 7.6
         out.append(
-            f'  <g class="rise" style="animation-delay:{0.07 * i:.2f}s">'
-            f'<circle cx="28" cy="{y - 5}" r="2.5" fill="var(--ac)" opacity=".55"/>'
-            f'<text x="40" y="{y}" class="k">{esc(key)}</text>'
-            f'<text x="376" y="{y}" class="v" text-anchor="end">{esc(val)}</text></g>'
+            f'    <g class="rise" style="animation-delay:{0.06 * i:.2f}s">'
+            f'<text x="24" y="{y}" class="mono ac">&#9656;</text>'
+            f'<text x="42" y="{y}" class="mono k">{esc(key)}</text>'
+            f'<line x1="{42 + kw:.0f}" y1="{y - 4}" x2="{w - 26 - vw:.0f}" y2="{y - 4}" '
+            f'stroke="var(--bd)" stroke-width="1" stroke-dasharray="1 4"/>'
+            f'<text x="{w - 24}" y="{y}" class="mono v" text-anchor="end">{esc(val)}</text></g>'
         )
-    foot = 72 + len(rows) * 26 + 6
-    out.append(f'  <text x="24" y="{foot}" class="s">across {d["repos"]} source repositories · regenerated daily</text>')
-    return frame(400, foot + 18, "Overview", "\n".join(out))
+    foot = 62 + len(rows) * 25 + 4
+    out.append(f'    <text x="24" y="{foot}" class="s"># regenerated daily - no third-party service</text>')
+    out.append(f'    <rect class="blink" x="24" y="{foot + 12}" width="8" height="14" fill="var(--ac)"/>')
+    return window(w, foot + 42, "Overview", f"~/{USER} $ gh stats --me", "\n".join(out))
+
+
+# One row per language, each element in its own x-band. A two-column legend
+# packs a name and its percentage into ~190px, which "Jupyter Notebook" (120px
+# at 12.5px mono) plus "43.2%" overruns - the labels collide. Giving every
+# field a fixed band makes that collision impossible rather than unlikely.
+ROW_SWATCH = 24
+ROW_NAME = 41
+ROW_TRACK = 208
+ROW_TRACK_W = 150
+ROW_VALUE = 416
+NAME_CHARS = 20
+MONO_ADV = 7.5          # widest advance among the fonts in the mono stack
+
+
+def _check_bands() -> None:
+    """Fail the build, not the reader, if the row bands ever start to overlap.
+
+    Twice now a label has been truncated or overprinted because a width was
+    estimated by eye. These are the two gaps that matter; both are arithmetic.
+    """
+    name_end = ROW_NAME + NAME_CHARS * MONO_ADV
+    value_start = ROW_VALUE - len("100.0%") * MONO_ADV
+    assert ROW_TRACK - name_end >= 8, f"name band overruns the track by {name_end - ROW_TRACK:.1f}px"
+    assert value_start - (ROW_TRACK + ROW_TRACK_W) >= 8, "track overruns the percentage column"
 
 
 def langs_card(d: dict, top: int = 8) -> str:
+    _check_bands()
     items = list(d["langs"].items())[:top]
     total = sum(v for _, v in items) or 1
-    bar_x, bar_w, bar_y = 24, 352, 56
+    peak = max(v for _, v in items) or 1
+    w = 440
+    bar_x, bar_w, bar_y = 24, w - 48, 58
 
     css = """
-    .wipe { animation: wipe 1.1s cubic-bezier(.2,.8,.2,1) both; }
-    @keyframes wipe { from { width: 0 } to { width: 352px } }
-    .shine { animation: shine 3.6s ease-in-out 1.2s infinite; }
-    @keyframes shine { 0% { transform: translateX(-90px) } 60%,100% { transform: translateX(380px) } }
-"""
+    .wipe { animation: wipe 1.1s cubic-bezier(.2,.8,.2,1) both }
+    @keyframes wipe { from { width: 0 } to { width: %dpx } }
+    .grow { transform-origin: %dpx 0; animation: grow .9s cubic-bezier(.2,.8,.2,1) both }
+    @keyframes grow { from { transform: scaleX(0) } to { transform: scaleX(1) } }
+    @media (prefers-reduced-motion: reduce) { .grow { animation: none } }
+""" % (bar_w, ROW_TRACK)
+
+    # Share bar: a 2px surface gap keeps adjacent segments from reading as one.
     segs, x = [], float(bar_x)
     for i, (name, count) in enumerate(items):
-        w = bar_w * count / total
-        r = 6 if i in (0, len(items) - 1) else 0
-        segs.append(f'      <rect x="{x:.1f}" y="{bar_y}" width="{w:.1f}" height="12" rx="{r}" '
-                    f'fill="{LANG_COLORS.get(name, "#6E7681")}"/>')
-        x += w
+        seg = bar_w * count / total
+        r = 7 if i in (0, len(items) - 1) else 0
+        segs.append(f'      <rect x="{x:.1f}" y="{bar_y}" width="{max(seg - 2, 1):.1f}" height="14" '
+                    f'rx="{r}" fill="{LANG_COLORS.get(name, "#6E7681")}"/>')
+        x += seg
 
     bar = (
-        f'  <defs><clipPath id="barclip"><rect class="wipe" x="{bar_x}" y="{bar_y}" width="0" height="12" rx="6"/></clipPath>\n'
-        f'    <linearGradient id="gloss" x1="0" y1="0" x2="1" y2="0">'
-        f'<stop offset="0%" stop-color="#fff" stop-opacity="0"/>'
-        f'<stop offset="50%" stop-color="#fff" stop-opacity=".55"/>'
-        f'<stop offset="100%" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>\n'
-        f'  <g clip-path="url(#barclip)">\n' + "\n".join(segs) + "\n"
-        f'    <rect class="shine" x="{bar_x}" y="{bar_y}" width="80" height="12" fill="url(#gloss)"/>\n'
-        f'  </g>'
+        f'    <defs><clipPath id="barclip">'
+        f'<rect class="wipe" x="{bar_x}" y="{bar_y}" width="0" height="14" rx="7"/></clipPath></defs>\n'
+        f'    <g clip-path="url(#barclip)">\n' + "\n".join(segs) + "\n    </g>"
     )
 
-    col_x, row_y = [24, 212], bar_y + 36
-    legend = []
+    row_y, step = bar_y + 46, 25
+    rows = []
     for i, (name, count) in enumerate(items):
-        cx, cy = col_x[i % 2], row_y + (i // 2) * 24
-        legend.append(
-            f'  <g class="rise" style="animation-delay:{0.9 + 0.06 * i:.2f}s">'
-            f'<circle cx="{cx + 5}" cy="{cy - 4}" r="5" fill="{LANG_COLORS.get(name, "#6E7681")}"/>'
-            f'<text x="{cx + 17}" y="{cy}" class="k">{esc(name)}</text>'
-            f'<text x="{cx + 156}" y="{cy}" class="v" text-anchor="end">{100.0 * count / total:.1f}%</text></g>'
+        cy = row_y + i * step
+        colour = LANG_COLORS.get(name, "#6E7681")
+        label = name if len(name) <= NAME_CHARS else name[:NAME_CHARS - 1] + "…"
+        fill_w = ROW_TRACK_W * count / peak
+        rows.append(
+            f'    <g class="rise" style="animation-delay:{0.55 + 0.05 * i:.2f}s">'
+            f'<rect x="{ROW_SWATCH}" y="{cy - 9}" width="9" height="9" rx="2" fill="{colour}"/>'
+            f'<text x="{ROW_NAME}" y="{cy}" class="mono k">{esc(label)}</text>'
+            f'<rect x="{ROW_TRACK}" y="{cy - 7}" width="{ROW_TRACK_W}" height="6" rx="3" '
+            f'fill="var(--bd)" opacity=".55"/>'
+            f'<rect class="grow" style="animation-delay:{0.6 + 0.05 * i:.2f}s" '
+            f'x="{ROW_TRACK}" y="{cy - 7}" width="{fill_w:.1f}" height="6" rx="3" fill="{colour}"/>'
+            f'<text x="{ROW_VALUE}" y="{cy}" class="mono v" text-anchor="end">'
+            f'{100.0 * count / total:.1f}%</text></g>'
         )
 
-    height = row_y + ((len(items) + 1) // 2) * 24 + 14
-    return frame(400, height, "Most used languages", bar + "\n" + "\n".join(legend), css)
+    height = row_y + (len(items) - 1) * step + 26
+    return window(w, height, "Most used languages", f"~/{USER} $ gh loadout --languages",
+                  bar + "\n" + "\n".join(rows), css)
+
+
+CELL, GAP = 12, 3
+STEP = CELL + GAP
+JET_W = 880
+GX, GY = 56, 70                 # grid origin
+FLY_FROM, FLY_TO = -70, JET_W + 80
+FLY_SECS = 9.0
+BEAM = 58                       # how far the beam reaches ahead of the nose
+
+
+def jet_card(cal: dict) -> str:
+    days = flatten(cal)
+    st = streaks(days)
+    lv = levels(days)
+    by_date = {d["date"]: d for d in days}
+
+    weeks = cal["weeks"][-53:]
+    grid_h = 7 * STEP - GAP
+    mid = GY + grid_h / 2
+
+    # Month ruler: label the week in which the month turns over. The opening
+    # week is skipped unless it genuinely starts its month, so the ruler never
+    # repeats the same name twice at the left edge.
+    ruler, seen = [], None
+    for i, wk in enumerate(weeks):
+        first = date.fromisoformat(wk["contributionDays"][0]["date"])
+        if first.month != seen:
+            if seen is not None or first.day <= 7:
+                ruler.append(f'    <text x="{GX + i * STEP}" y="{GY - 12}" class="s">'
+                             f'{MONTHS[first.month - 1]}</text>')
+            seen = first.month
+
+    rows = [f'    <text x="{GX - 10}" y="{GY + r * STEP + 10}" class="s" text-anchor="end">{lbl}</text>'
+            for r, lbl in ((1, "Mon"), (3, "Wed"), (5, "Fri"))]
+
+    cols = []
+    for i, wk in enumerate(weeks):
+        x = GX + i * STEP
+        # The beam front reaches this column at t; the flash is keyed to it.
+        t = FLY_SECS * (x + CELL / 2 - BEAM - FLY_FROM) / (FLY_TO - FLY_FROM)
+        cells = []
+        for d in wk["contributionDays"]:
+            iso = d["date"]
+            if iso not in by_date:
+                continue
+            # No per-cell <title>: GitHub renders this file inside an <img>,
+            # where tooltips never fire, and 365 of them double the file size.
+            y = GY + d["weekday"] * STEP
+            cells.append(
+                f'<rect x="{x}" y="{y}" width="{CELL}" height="{CELL}" rx="3" '
+                f'fill="var(--l{lv[iso]})"/>'
+            )
+        if cells:
+            cols.append(f'    <g class="col" style="animation-delay:{0.012 * i:.2f}s,{max(t, 0):.2f}s">'
+                        + "".join(cells) + "</g>")
+
+    jet = f"""    <g transform="translate(0,{mid:.0f})">
+      <g class="fly">
+        <rect class="beam" x="14" y="-1.6" width="{BEAM}" height="3.2" rx="1.6" fill="url(#beamg)"/>
+        <rect x="-34" y="-2.5" width="26" height="5" rx="2.5" fill="url(#trail)"/>
+        <path d="M18,0 L-8,-7 L-2,0 L-8,7 Z" fill="var(--ac)"/>
+        <path d="M-2,-3.5 L-15,-13 L-6,-3.5 Z" fill="var(--hi)"/>
+        <path d="M-2,3.5 L-15,13 L-6,3.5 Z" fill="var(--hi)"/>
+        <circle cx="-6" cy="0" r="3" fill="#FFFFFF" opacity=".92"/>
+      </g>
+    </g>"""
+
+    tiles = [
+        (f'{cal["totalContributions"]:,}', "contributions - 12 mo"),
+        (f'{st["current"]}', "day current streak"),
+        (f'{st["longest"]}', "day longest streak"),
+        (f'{st["peak"]["contributionCount"]}', f'busiest day - {st["peak"]["date"]}'),
+    ]
+    base = GY + grid_h + 44
+    stat = []
+    for i, (val, lbl) in enumerate(tiles):
+        x = GX + i * 206
+        stat.append(
+            f'    <g class="rise" style="animation-delay:{0.9 + 0.08 * i:.2f}s">'
+            f'<rect x="{x - 2}" y="{base - 22}" width="3" height="30" rx="1.5" fill="var(--ac)" opacity=".7"/>'
+            f'<text x="{x + 12}" y="{base}" class="big">{esc(val)}</text>'
+            f'<text x="{x + 12}" y="{base + 16}" class="s">{esc(lbl)}</text></g>'
+        )
+
+    css = """
+    .col { opacity:0; animation: boot .45s ease-out both, zap %.1fs linear infinite }
+    @keyframes boot { from { opacity:0; transform: translateY(5px) } to { opacity:1; transform:none } }
+    @keyframes zap { 0%% { filter: brightness(2.7) } 5%% { filter:none } 100%% { filter:none } }
+    .fly { animation: fly %.1fs linear infinite }
+    @keyframes fly { from { transform: translateX(%dpx) } to { transform: translateX(%dpx) } }
+""" % (FLY_SECS, FLY_SECS, FLY_FROM, FLY_TO)
+
+    defs = """    <defs>
+      <linearGradient id="beamg" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0%" stop-color="var(--ac)" stop-opacity=".95"/>
+        <stop offset="70%" stop-color="var(--hi)" stop-opacity=".55"/>
+        <stop offset="100%" stop-color="var(--hi)" stop-opacity="0"/>
+      </linearGradient>
+      <linearGradient id="trail" x1="1" y1="0" x2="0" y2="0">
+        <stop offset="0%" stop-color="var(--ac)" stop-opacity=".8"/>
+        <stop offset="100%" stop-color="var(--ac)" stop-opacity="0"/>
+      </linearGradient>
+    </defs>"""
+
+    body = "\n".join([defs, *ruler, *rows, *cols, jet, *stat])
+    return window(JET_W, base + 34, "Contribution activity",
+                  f"~/{USER} $ gh contributions --last 12mo --render jet", body, css)
+
+
+# -------------------------------------------------------------- README patch
+
+def patch_readme(repos: int) -> None:
+    path = ROOT / "README.md"
+    text = path.read_text(encoding="utf-8")
+    patched = re.sub(r"(badge/Repositories-)\d+", rf"\g<1>{repos}", text)
+    if patched != text:
+        path.write_text(patched, encoding="utf-8")
+        print(f"  README.md repository count -> {repos}")
 
 
 def main() -> None:
-    data = collect()
     ASSETS.mkdir(exist_ok=True)
+    data = fixture_stats() if FIXTURE else collect()
+    out = ASSETS.name
     (ASSETS / "stats.svg").write_text(stats_card(data), encoding="utf-8")
     (ASSETS / "top-langs.svg").write_text(langs_card(data), encoding="utf-8")
-    print(f"wrote assets/stats.svg and assets/top-langs.svg for {USER}")
+    print(f"wrote {out}/stats.svg and {out}/top-langs.svg")
+
+    jet = ASSETS / "contribution-jet.svg"
+    cal = fixture_calendar() if FIXTURE else graphql_calendar()
+    missing = False
+    if cal:
+        jet.write_text(jet_card(cal), encoding="utf-8")
+        print(f"wrote {out}/contribution-jet.svg ({cal['totalContributions']:,} contributions)")
+    elif jet.exists():
+        print("  keeping the previous contribution card")
+    else:
+        # The README links this card by relative path, so a missing file is a
+        # broken image on the profile. That has to fail the run - but only
+        # after the other cards are written, so a calendar outage never costs
+        # us the stats refresh too.
+        missing = True
+
+    if not FIXTURE:
+        patch_readme(data["repos"])
+
     for name, count in list(data["langs"].items())[:8]:
         print(f"  {name:<18} {count:>10,} bytes")
+
+    if missing:
+        sys.exit("\nthe contribution card has never been rendered and the calendar is "
+                 "unreachable - set PROFILE_TOKEN to a PAT with read:user")
 
 
 if __name__ == "__main__":

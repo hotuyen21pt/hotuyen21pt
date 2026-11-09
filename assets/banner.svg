@@ -1,134 +1,208 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="900" height="280" viewBox="0 0 900 280" role="img" aria-label="Tuyen Ho Nguyen — NLP Research, Multimodal AI, Full-stack ML Engineering">
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="300" viewBox="0 0 900 300" role="img" aria-label="Tuyen Ho Nguyen - NLP Research, Multimodal AI, ML Engineering">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%"   stop-color="#070B14"/>
-      <stop offset="50%"  stop-color="#0E2234"/>
-      <stop offset="100%" stop-color="#070B14"/>
+      <stop offset="0%" stop-color="var(--sky0)"/>
+      <stop offset="52%" stop-color="var(--sky1)"/>
+      <stop offset="100%" stop-color="var(--sky0)"/>
     </linearGradient>
-
-    <!-- Slow sheen that travels across the name. -->
     <linearGradient id="sheen" x1="0" y1="0" x2="1" y2="0" gradientUnits="objectBoundingBox">
-      <stop offset="0%"   stop-color="#9FE8FF"/>
-      <stop offset="45%"  stop-color="#36BCF7"/>
-      <stop offset="55%"  stop-color="#FFFFFF"/>
-      <stop offset="100%" stop-color="#36BCF7"/>
+      <stop offset="0%" stop-color="var(--hi)"/>
+      <stop offset="42%" stop-color="var(--ac)"/>
+      <stop offset="52%" stop-color="var(--ink)"/>
+      <stop offset="100%" stop-color="var(--ac)"/>
       <animate attributeName="x1" values="-1;0;-1" dur="7s" repeatCount="indefinite"/>
-      <animate attributeName="x2" values="0;1;0"   dur="7s" repeatCount="indefinite"/>
+      <animate attributeName="x2" values="0;1;0" dur="7s" repeatCount="indefinite"/>
     </linearGradient>
-
     <linearGradient id="rule" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%"   stop-color="#36BCF7" stop-opacity="0"/>
-      <stop offset="50%"  stop-color="#36BCF7" stop-opacity="1"/>
-      <stop offset="100%" stop-color="#7C4DFF" stop-opacity="0"/>
+      <stop offset="0%" stop-color="var(--ac)" stop-opacity="0"/>
+      <stop offset="45%" stop-color="var(--ac)" stop-opacity="1"/>
+      <stop offset="100%" stop-color="var(--hi)" stop-opacity="0"/>
     </linearGradient>
-
-    <radialGradient id="glowA">
-      <stop offset="0%"   stop-color="#36BCF7" stop-opacity="0.55"/>
-      <stop offset="100%" stop-color="#36BCF7" stop-opacity="0"/>
+    <linearGradient id="thrust" x1="1" y1="0" x2="0" y2="0">
+      <stop offset="0%" stop-color="var(--ac)" stop-opacity=".85"/>
+      <stop offset="100%" stop-color="var(--ac)" stop-opacity="0"/>
+    </linearGradient>
+    <radialGradient id="nebA">
+      <stop offset="0%" stop-color="var(--ac)" stop-opacity="0.42"/>
+      <stop offset="100%" stop-color="var(--ac)" stop-opacity="0"/>
     </radialGradient>
-    <radialGradient id="glowB">
-      <stop offset="0%"   stop-color="#7C4DFF" stop-opacity="0.45"/>
-      <stop offset="100%" stop-color="#7C4DFF" stop-opacity="0"/>
+    <radialGradient id="nebB">
+      <stop offset="0%" stop-color="var(--hi)" stop-opacity="0.38"/>
+      <stop offset="100%" stop-color="var(--hi)" stop-opacity="0"/>
     </radialGradient>
-
     <pattern id="grid" width="36" height="36" patternUnits="userSpaceOnUse">
-      <path d="M36 0H0V36" fill="none" stroke="#36BCF7" stroke-opacity="0.07" stroke-width="1"/>
+      <path d="M36 0H0V36" fill="none" stroke="var(--ac)" stroke-opacity="0.08" stroke-width="1"/>
     </pattern>
-
-    <clipPath id="card"><rect width="900" height="280" rx="16"/></clipPath>
-
-    <!-- One clip per typed line; the width is what animates. -->
-    <clipPath id="c1"><rect class="r1" x="78" y="196" width="0" height="26"/></clipPath>
-    <clipPath id="c2"><rect class="r2" x="78" y="196" width="0" height="26"/></clipPath>
-    <clipPath id="c3"><rect class="r3" x="78" y="196" width="0" height="26"/></clipPath>
-    <clipPath id="c4"><rect class="r4" x="78" y="196" width="0" height="26"/></clipPath>
+    <clipPath id="card"><rect width="900" height="300" rx="16"/></clipPath>
+    <clipPath id="c0"><rect class="r0" x="78" y="211" width="0" height="24"/></clipPath>
+    <clipPath id="c1"><rect class="r1" x="78" y="211" width="0" height="24"/></clipPath>
+    <clipPath id="c2"><rect class="r2" x="78" y="211" width="0" height="24"/></clipPath>
+    <clipPath id="c3"><rect class="r3" x="78" y="211" width="0" height="24"/></clipPath>
   </defs>
 
   <style>
-    .name {
-      font: 800 46px 'Segoe UI', Ubuntu, -apple-system, Helvetica, sans-serif;
-      letter-spacing: 2.5px; fill: url(#sheen);
+    svg {
+      --sky0:#F4F8FE; --sky1:#DCE8FA; --ink:#0B1F33; --dim:#4A6076;
+      --ac:#0B6FD4; --hi:#6A3DE8; --star:#2B4A68; --bd:#C9D6E5; --glass:#FFFFFF;
     }
-    .role {
-      font: 400 16px 'Segoe UI', Ubuntu, -apple-system, Helvetica, sans-serif;
-      letter-spacing: 3.4px; fill: #8FB3C9; text-transform: uppercase;
+    @media (prefers-color-scheme: dark) {
+      svg {
+        --sky0:#05070F; --sky1:#0C1A33; --ink:#E8F2FF; --dim:#8FB3C9;
+        --ac:#36BCF7; --hi:#7C4DFF; --star:#FFFFFF; --bd:#1E3A52; --glass:#0D1117;
+      }
     }
-    .mono { font: 500 17px 'Cascadia Code', 'Fira Code', Consolas, 'Liberation Mono', monospace; }
-    .typed  { fill: #D7E6F2; }
-    .prompt { fill: #36BCF7; }
-    .caret  { fill: #36BCF7; }
 
-    .line { opacity: 0; animation: show 14s linear infinite; }
-    .l1 { animation-delay: 0s; }    .l2 { animation-delay: 3.5s; }
-    .l3 { animation-delay: 7s; }    .l4 { animation-delay: 10.5s; }
+    .name { font: 800 48px 'Segoe UI',Ubuntu,-apple-system,Helvetica,sans-serif;
+             letter-spacing: 2.6px; fill: url(#sheen) }
+    .role { font: 600 14px 'Segoe UI',Ubuntu,-apple-system,sans-serif;
+             letter-spacing: 3.6px; fill: var(--dim); text-transform: uppercase }
+    .mono { font: 500 16px 'JetBrains Mono','Cascadia Code','Fira Code',Consolas,monospace }
+    .chip { font: 400 11.5px 'JetBrains Mono','Cascadia Code',Consolas,monospace; fill: var(--dim) }
+    .typed { fill: var(--ink) }
+    .prompt, .caret { fill: var(--ac) }
+    .hud { fill: none; stroke: var(--ac); stroke-opacity: .45; stroke-width: 2; stroke-linecap: round }
 
-    @keyframes show { 0% { opacity: 1 } 24.9% { opacity: 1 } 25% { opacity: 0 } 100% { opacity: 0 } }
+    .line { opacity: 0 }
+    .r0 { animation: t0 16.0s steps(44) infinite 0.00s }
+    @keyframes t0 { 0%{width:0} 13.0%{width:427px} 21.0%{width:427px} 25.0%{width:0} 100%{width:0} }
+    .k0 { animation: c0 16.0s steps(44) infinite 0.00s, blink 1.05s steps(1) infinite }
+    @keyframes c0 { 0%{x:78px} 13.0%{x:505px} 21.0%{x:505px} 25.0%{x:78px} 100%{x:78px} }
+    .l0 { animation: show 16.0s linear infinite 0.00s }
+    .r1 { animation: t1 16.0s steps(41) infinite 4.00s }
+    @keyframes t1 { 0%{width:0} 13.0%{width:398px} 21.0%{width:398px} 25.0%{width:0} 100%{width:0} }
+    .k1 { animation: c1 16.0s steps(41) infinite 4.00s, blink 1.05s steps(1) infinite }
+    @keyframes c1 { 0%{x:78px} 13.0%{x:476px} 21.0%{x:476px} 25.0%{x:78px} 100%{x:78px} }
+    .l1 { animation: show 16.0s linear infinite 4.00s }
+    .r2 { animation: t2 16.0s steps(48) infinite 8.00s }
+    @keyframes t2 { 0%{width:0} 13.0%{width:466px} 21.0%{width:466px} 25.0%{width:0} 100%{width:0} }
+    .k2 { animation: c2 16.0s steps(48) infinite 8.00s, blink 1.05s steps(1) infinite }
+    @keyframes c2 { 0%{x:78px} 13.0%{x:544px} 21.0%{x:544px} 25.0%{x:78px} 100%{x:78px} }
+    .l2 { animation: show 16.0s linear infinite 8.00s }
+    .r3 { animation: t3 16.0s steps(44) infinite 12.00s }
+    @keyframes t3 { 0%{width:0} 13.0%{width:427px} 21.0%{width:427px} 25.0%{width:0} 100%{width:0} }
+    .k3 { animation: c3 16.0s steps(44) infinite 12.00s, blink 1.05s steps(1) infinite }
+    @keyframes c3 { 0%{x:78px} 13.0%{x:505px} 21.0%{x:505px} 25.0%{x:78px} 100%{x:78px} }
+    .l3 { animation: show 16.0s linear infinite 12.00s }
+    @keyframes show { 0%{opacity:1} 24.9%{opacity:1} 25.0%{opacity:0} 100%{opacity:0} }
 
-    /* width animates in character-sized steps, so it reads as typing. */
-    .r1 { animation: t1 14s steps(38) infinite 0s; }
-    .r2 { animation: t2 14s steps(45) infinite 3.5s; }
-    .r3 { animation: t3 14s steps(41) infinite 7s; }
-    .r4 { animation: t4 14s steps(42) infinite 10.5s; }
-    @keyframes t1 { 0%{width:0} 13%{width:418px} 21%{width:418px} 24%{width:0} 100%{width:0} }
-    @keyframes t2 { 0%{width:0} 13%{width:495px} 21%{width:495px} 24%{width:0} 100%{width:0} }
-    @keyframes t3 { 0%{width:0} 13%{width:451px} 21%{width:451px} 24%{width:0} 100%{width:0} }
-    @keyframes t4 { 0%{width:0} 13%{width:462px} 21%{width:462px} 24%{width:0} 100%{width:0} }
+    @keyframes blink { 0%,50% { opacity: 1 } 51%,100% { opacity: .12 } }
 
-    /* The caret rides the same timeline, so it always sits at the clip edge. */
-    .k1 { animation: k1 14s steps(38) infinite 0s, blink 1s steps(1) infinite; }
-    .k2 { animation: k2 14s steps(45) infinite 3.5s, blink 1s steps(1) infinite; }
-    .k3 { animation: k3 14s steps(41) infinite 7s, blink 1s steps(1) infinite; }
-    .k4 { animation: k4 14s steps(42) infinite 10.5s, blink 1s steps(1) infinite; }
-    @keyframes k1 { 0%{x:78px} 13%{x:496px} 21%{x:496px} 24%{x:78px} 100%{x:78px} }
-    @keyframes k2 { 0%{x:78px} 13%{x:573px} 21%{x:573px} 24%{x:78px} 100%{x:78px} }
-    @keyframes k3 { 0%{x:78px} 13%{x:529px} 21%{x:529px} 24%{x:78px} 100%{x:78px} }
-    @keyframes k4 { 0%{x:78px} 13%{x:540px} 21%{x:540px} 24%{x:78px} 100%{x:78px} }
-    @keyframes blink { 0%,50% { opacity: 1 } 51%,100% { opacity: 0.1 } }
+    .twinkle { animation-name: tw; animation-iteration-count: infinite;
+                animation-timing-function: ease-in-out }
+    @keyframes tw { 0%,100% { opacity: .15 } 50% { opacity: .9 } }
 
-    .rise { animation: rise 1s cubic-bezier(.2,.8,.2,1) both; }
-    @keyframes rise { from { opacity: 0; transform: translateY(14px) } to { opacity: 1; transform: none } }
+    .rise { opacity: 0; animation: rise .9s cubic-bezier(.2,.8,.2,1) both }
+    @keyframes rise { from { opacity: 0; transform: translateY(12px) } to { opacity: 1; transform: none } }
 
-    .pulse { animation: pulse 4.5s ease-in-out infinite; }
-    @keyframes pulse { 0%,100% { opacity: .75 } 50% { opacity: 1 } }
+    .pulse { animation: pulse 4.5s ease-in-out infinite }
+    @keyframes pulse { 0%,100% { opacity: .7 } 50% { opacity: 1 } }
+
+    .fly { animation: fly 11s linear infinite }
+    @keyframes fly { from { transform: translateX(-60px) } to { transform: translateX(970px) } }
+    .jet-body { animation: bob 2.6s ease-in-out infinite }
+    @keyframes bob { 0%,100% { transform: translateY(-3px) } 50% { transform: translateY(3px) } }
 
     @media (prefers-reduced-motion: reduce) {
-      .line, .r1, .r2, .r3, .r4, .k1, .k2, .k3, .k4, .rise, .pulse { animation: none }
-      .line.l1 { opacity: 1 } .r1 { width: 418px } .k1 { x: 496px }
+      .line,.caret,.twinkle,.rise,.pulse,.fly,.jet-body,.name { animation: none !important }
+      .line,.rise { opacity: 1 }
+      .line.l0 { opacity: 1 } .r0 { width: 427px }
+      .line.l1,.line.l2,.line.l3 { opacity: 0 }
     }
   </style>
 
   <g clip-path="url(#card)">
-    <rect width="900" height="280" fill="url(#bg)"/>
-    <rect width="900" height="280" fill="url(#grid)"/>
+    <rect width="900" height="300" fill="url(#bg)"/>
+    <rect width="900" height="300" fill="url(#grid)"/>
 
-    <ellipse cx="150" cy="70" rx="260" ry="170" fill="url(#glowA)">
-      <animate attributeName="cx" values="150;340;150" dur="13s" repeatCount="indefinite"/>
-      <animate attributeName="cy" values="70;140;70"   dur="17s" repeatCount="indefinite"/>
+    <ellipse cx="150" cy="70" rx="270" ry="180" fill="url(#nebA)">
+      <animate attributeName="cx" values="150;360;150" dur="14s" repeatCount="indefinite"/>
+      <animate attributeName="cy" values="70;150;70" dur="18s" repeatCount="indefinite"/>
     </ellipse>
-    <ellipse cx="790" cy="220" rx="250" ry="160" fill="url(#glowB)">
-      <animate attributeName="cx" values="790;610;790" dur="15s" repeatCount="indefinite"/>
-      <animate attributeName="cy" values="220;120;220" dur="11s" repeatCount="indefinite"/>
+    <ellipse cx="790" cy="230" rx="260" ry="170" fill="url(#nebB)">
+      <animate attributeName="cx" values="790;600;790" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="cy" values="230;130;230" dur="12s" repeatCount="indefinite"/>
     </ellipse>
+
+    <circle cx="154" cy="204" r="1.1" fill="var(--star)" opacity="0.54" class="twinkle" style="animation-duration:3.3s;animation-delay:4.0s"/>
+    <circle cx="722" cy="154" r="0.9" fill="var(--star)" opacity="0.72" class="twinkle" style="animation-duration:2.5s;animation-delay:4.7s"/>
+    <circle cx="387" cy="49" r="0.9" fill="var(--star)" opacity="0.80" class="twinkle" style="animation-duration:5.2s;animation-delay:2.2s"/>
+    <circle cx="888" cy="227" r="1.4" fill="var(--star)" opacity="0.62" class="twinkle" style="animation-duration:2.5s;animation-delay:1.6s"/>
+    <circle cx="448" cy="41" r="1.1" fill="var(--star)" opacity="0.26" class="twinkle" style="animation-duration:5.4s;animation-delay:0.4s"/>
+    <circle cx="723" cy="14" r="0.9" fill="var(--star)" opacity="0.58" class="twinkle" style="animation-duration:3.8s;animation-delay:2.4s"/>
+    <circle cx="173" cy="19" r="0.9" fill="var(--star)" opacity="0.29" class="twinkle" style="animation-duration:3.2s;animation-delay:3.4s"/>
+    <circle cx="718" cy="195" r="0.7" fill="var(--star)" opacity="0.32" class="twinkle" style="animation-duration:4.4s;animation-delay:4.1s"/>
+    <circle cx="186" cy="270" r="1.4" fill="var(--star)" opacity="0.43" class="twinkle" style="animation-duration:6.3s;animation-delay:2.5s"/>
+    <circle cx="289" cy="146" r="1.1" fill="var(--star)" opacity="0.27" class="twinkle" style="animation-duration:2.8s;animation-delay:3.6s"/>
+    <circle cx="886" cy="149" r="1.4" fill="var(--star)" opacity="0.29" class="twinkle" style="animation-duration:4.9s;animation-delay:2.6s"/>
+    <circle cx="513" cy="98" r="0.7" fill="var(--star)" opacity="0.36" class="twinkle" style="animation-duration:3.1s;animation-delay:1.7s"/>
+    <circle cx="828" cy="106" r="1.1" fill="var(--star)" opacity="0.40" class="twinkle" style="animation-duration:3.1s;animation-delay:4.6s"/>
+    <circle cx="162" cy="130" r="0.9" fill="var(--star)" opacity="0.66" class="twinkle" style="animation-duration:5.2s;animation-delay:4.5s"/>
+    <circle cx="855" cy="124" r="0.9" fill="var(--star)" opacity="0.83" class="twinkle" style="animation-duration:4.8s;animation-delay:4.4s"/>
+    <circle cx="442" cy="115" r="0.9" fill="var(--star)" opacity="0.81" class="twinkle" style="animation-duration:3.4s;animation-delay:2.8s"/>
+    <circle cx="396" cy="124" r="1.4" fill="var(--star)" opacity="0.28" class="twinkle" style="animation-duration:3.6s;animation-delay:4.3s"/>
+    <circle cx="590" cy="18" r="0.9" fill="var(--star)" opacity="0.35" class="twinkle" style="animation-duration:2.7s;animation-delay:1.7s"/>
+    <circle cx="803" cy="287" r="1.4" fill="var(--star)" opacity="0.28" class="twinkle" style="animation-duration:3.0s;animation-delay:3.3s"/>
+    <circle cx="814" cy="144" r="0.9" fill="var(--star)" opacity="0.79" class="twinkle" style="animation-duration:3.9s;animation-delay:0.8s"/>
+    <circle cx="334" cy="227" r="1.4" fill="var(--star)" opacity="0.60" class="twinkle" style="animation-duration:5.9s;animation-delay:1.5s"/>
+    <circle cx="480" cy="86" r="0.7" fill="var(--star)" opacity="0.48" class="twinkle" style="animation-duration:2.9s;animation-delay:3.6s"/>
+    <circle cx="242" cy="101" r="0.9" fill="var(--star)" opacity="0.76" class="twinkle" style="animation-duration:4.8s;animation-delay:1.3s"/>
+    <circle cx="367" cy="280" r="0.9" fill="var(--star)" opacity="0.33" class="twinkle" style="animation-duration:2.8s;animation-delay:0.5s"/>
+    <circle cx="30" cy="135" r="0.9" fill="var(--star)" opacity="0.29" class="twinkle" style="animation-duration:2.9s;animation-delay:1.4s"/>
+    <circle cx="277" cy="276" r="1.4" fill="var(--star)" opacity="0.55" class="twinkle" style="animation-duration:3.3s;animation-delay:0.8s"/>
+    <circle cx="171" cy="115" r="0.7" fill="var(--star)" opacity="0.61" class="twinkle" style="animation-duration:4.5s;animation-delay:3.7s"/>
+    <circle cx="58" cy="272" r="1.4" fill="var(--star)" opacity="0.53" class="twinkle" style="animation-duration:2.7s;animation-delay:3.8s"/>
+    <circle cx="163" cy="210" r="1.1" fill="var(--star)" opacity="0.83" class="twinkle" style="animation-duration:4.9s;animation-delay:3.7s"/>
+    <circle cx="224" cy="52" r="1.1" fill="var(--star)" opacity="0.74" class="twinkle" style="animation-duration:5.7s;animation-delay:2.5s"/>
+    <circle cx="515" cy="163" r="0.7" fill="var(--star)" opacity="0.55" class="twinkle" style="animation-duration:5.4s;animation-delay:4.8s"/>
+    <circle cx="282" cy="207" r="0.9" fill="var(--star)" opacity="0.29" class="twinkle" style="animation-duration:5.7s;animation-delay:4.9s"/>
+    <circle cx="322" cy="98" r="1.4" fill="var(--star)" opacity="0.31" class="twinkle" style="animation-duration:2.7s;animation-delay:0.4s"/>
+    <circle cx="728" cy="224" r="1.4" fill="var(--star)" opacity="0.55" class="twinkle" style="animation-duration:6.3s;animation-delay:3.4s"/>
+    <circle cx="632" cy="142" r="1.4" fill="var(--star)" opacity="0.78" class="twinkle" style="animation-duration:2.7s;animation-delay:0.1s"/>
+    <circle cx="593" cy="20" r="1.1" fill="var(--star)" opacity="0.67" class="twinkle" style="animation-duration:5.8s;animation-delay:3.6s"/>
+    <circle cx="411" cy="75" r="1.4" fill="var(--star)" opacity="0.45" class="twinkle" style="animation-duration:3.3s;animation-delay:4.6s"/>
+    <circle cx="586" cy="19" r="0.9" fill="var(--star)" opacity="0.55" class="twinkle" style="animation-duration:5.3s;animation-delay:4.5s"/>
+    <circle cx="697" cy="186" r="1.1" fill="var(--star)" opacity="0.40" class="twinkle" style="animation-duration:6.2s;animation-delay:1.9s"/>
+    <circle cx="551" cy="242" r="0.7" fill="var(--star)" opacity="0.35" class="twinkle" style="animation-duration:3.2s;animation-delay:4.4s"/>
+    <circle cx="641" cy="34" r="0.9" fill="var(--star)" opacity="0.30" class="twinkle" style="animation-duration:3.6s;animation-delay:4.7s"/>
+    <circle cx="664" cy="139" r="0.7" fill="var(--star)" opacity="0.84" class="twinkle" style="animation-duration:3.1s;animation-delay:2.2s"/>
+    <circle cx="608" cy="114" r="0.9" fill="var(--star)" opacity="0.41" class="twinkle" style="animation-duration:6.3s;animation-delay:1.6s"/>
+    <circle cx="233" cy="248" r="0.9" fill="var(--star)" opacity="0.79" class="twinkle" style="animation-duration:4.5s;animation-delay:1.2s"/>
+    <circle cx="616" cy="211" r="0.9" fill="var(--star)" opacity="0.81" class="twinkle" style="animation-duration:4.3s;animation-delay:2.2s"/>
+    <circle cx="554" cy="88" r="0.9" fill="var(--star)" opacity="0.65" class="twinkle" style="animation-duration:4.9s;animation-delay:0.5s"/>
+    <path d="M18,44 L18,18 L44,18" class="hud"/>
+    <path d="M856,18 L882,18 L882,44" class="hud"/>
+    <path d="M18,256 L18,282 L44,282" class="hud"/>
+    <path d="M856,282 L882,282 L882,256" class="hud"/>
+
+    <g transform="translate(0,62)"><g class="fly"><g class="jet-body">
+      <rect x="-30" y="-2" width="24" height="4" rx="2" fill="url(#thrust)"/>
+      <path d="M16,0 L-7,-6 L-2,0 L-7,6 Z" fill="var(--ac)"/>
+      <path d="M-2,-3 L-13,-11 L-5,-3 Z" fill="var(--hi)"/>
+      <path d="M-2,3 L-13,11 L-5,3 Z" fill="var(--hi)"/>
+      <circle cx="-5" cy="0" r="2.6" fill="#FFFFFF" opacity=".92"/>
+    </g></g></g>
 
     <g class="rise">
-      <text x="48" y="92" class="role">NLP Research · Multimodal AI · ML Engineering</text>
-      <text x="46" y="152" class="name">TUYEN HO NGUYEN</text>
-      <rect x="48" y="170" width="300" height="2" rx="1" fill="url(#rule)" class="pulse"/>
+      <text x="48" y="96" class="role">NLP Research &#183; Multimodal AI &#183; ML Engineering</text>
+      <text x="46" y="158" class="name">TUYEN HO NGUYEN</text>
+      <rect x="48" y="176" width="320" height="2" rx="1" fill="url(#rule)" class="pulse"/>
     </g>
 
-    <text x="48" y="215" class="mono prompt">&#8250;</text>
+    <text x="48" y="228" class="mono prompt">&#8250;</text>
+    <g class="line l0"><g clip-path="url(#c0)"><text x="78" y="228" class="mono typed">target    : aspect sentiment quad prediction</text></g></g>
+    <g class="line l1"><g clip-path="url(#c1)"><text x="78" y="228" class="mono typed">payload   : MedGemma-4B + LoRA, soft-GIoU</text></g></g>
+    <g class="line l2"><g clip-path="url(#c2)"><text x="78" y="228" class="mono typed">telemetry : 180 tests green, docker builds clean</text></g></g>
+    <g class="line l3"><g clip-path="url(#c3)"><text x="78" y="228" class="mono typed">objective : faithful to the paper, then fast</text></g></g>
+    <g class="line l0"><rect class="caret k0" y="214" width="9" height="19" rx="1"/></g>
+    <g class="line l1"><rect class="caret k1" y="214" width="9" height="19" rx="1"/></g>
+    <g class="line l2"><rect class="caret k2" y="214" width="9" height="19" rx="1"/></g>
+    <g class="line l3"><rect class="caret k3" y="214" width="9" height="19" rx="1"/></g>
 
-    <g class="line l1"><g clip-path="url(#c1)"><text x="78" y="215" class="mono typed">Aspect-Based Sentiment Analysis · ASQP</text></g></g>
-    <g class="line l2"><g clip-path="url(#c2)"><text x="78" y="215" class="mono typed">Medical VQA on Chest X-rays · MedGemma + LoRA</text></g></g>
-    <g class="line l3"><g clip-path="url(#c3)"><text x="78" y="215" class="mono typed">LLM fine-tuning, distillation &amp; evaluation</text></g></g>
-    <g class="line l4"><g clip-path="url(#c4)"><text x="78" y="215" class="mono typed">from the paper to a Docker image that runs</text></g></g>
+    <g class="rise" style="animation-delay:1.00s"><circle cx="52" cy="258" r="3.2" fill="var(--ac)"/><text x="64" y="262" class="chip">open to research collaboration</text></g>
+    <g class="rise" style="animation-delay:1.12s"><circle cx="320" cy="258" r="3.2" fill="var(--hi)"/><text x="332" y="262" class="chip">Ho Chi Minh City, VN</text></g>
+    <g class="rise" style="animation-delay:1.24s"><circle cx="588" cy="258" r="3.2" fill="var(--ac)"/><text x="600" y="262" class="chip">reproducible by default</text></g>
 
-    <g class="line l1"><rect class="caret k1" y="198" width="9" height="22" rx="1"/></g>
-    <g class="line l2"><rect class="caret k2" y="198" width="9" height="22" rx="1"/></g>
-    <g class="line l3"><rect class="caret k3" y="198" width="9" height="22" rx="1"/></g>
-    <g class="line l4"><rect class="caret k4" y="198" width="9" height="22" rx="1"/></g>
-
-    <rect x="0" y="277" width="900" height="3" fill="url(#rule)" class="pulse"/>
+    <rect x="0" y="297" width="900" height="3" fill="url(#rule)" class="pulse"/>
   </g>
-  <rect x="0.5" y="0.5" width="899" height="279" rx="16" fill="none" stroke="#1E3A52"/>
+  <rect x="0.5" y="0.5" width="899" height="299" rx="16" fill="none" stroke="var(--bd)"/>
 </svg>
