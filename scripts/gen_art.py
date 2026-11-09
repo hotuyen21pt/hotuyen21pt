@@ -724,14 +724,30 @@ CARD_X, CARD_Y = 30, 62
 SPARK_COLORS = ["#36BCF7", "#7C4DFF", "#2EE6A6", "#FFFFFF"]
 
 
-def _hsl_tweak(hex_: str, sat: float = 1.05, light: float = 1.08) -> str:
-    """Push a sampled colour a little brighter and more saturated - dots on a
-    dark panel read duller than the same pixels in a photo."""
-    import colorsys
-    r, g, b = (int(hex_[i:i + 2], 16) / 255 for i in (0, 2, 4))
-    h, l, s = colorsys.rgb_to_hls(r, g, b)
-    r, g, b = colorsys.hls_to_rgb(h, min(1, l * light), min(1, s * sat))
-    return f"#{int(r * 255):02X}{int(g * 255):02X}{int(b * 255):02X}"
+# The portrait is drawn in one blue ramp rather than the picture's own colours,
+# so it reads as a rendering of the avatar, not a copy of it. Stops run from
+# the subject's darkest tone to its brightest.
+BLUE_RAMP = ["#1E3A8A", "#1D4ED8", "#3B82F6", "#60A5FA", "#BAE6FD"]
+INK_BLUE = "#E0F2FE"    # outlines (glasses, eyes): brightest, so they stay legible
+
+
+def _ramp(t: float) -> str:
+    t = max(0.0, min(1.0, t)) * (len(BLUE_RAMP) - 1)
+    i = min(int(t), len(BLUE_RAMP) - 2)
+    f = t - i
+    a, b = BLUE_RAMP[i], BLUE_RAMP[i + 1]
+    mix = (round(int(a[k:k + 2], 16) * (1 - f) + int(b[k:k + 2], 16) * f) for k in (1, 3, 5))
+    return "#" + "".join(f"{v:02X}" for v in mix)
+
+
+def _luma_sat(hx: str) -> tuple[float, float]:
+    R, G, B = (int(hx[i:i + 2], 16) for i in (0, 2, 4))
+    return (0.299 * R + 0.587 * G + 0.114 * B,
+            (max(R, G, B) - min(R, G, B)) / max(1, max(R, G, B)))
+
+
+def _is_background(luma: float, sat: float) -> bool:
+    return luma > 215 and sat < 0.14
 
 
 def _sparkle(x: float, y: float, s: float) -> str:
@@ -761,23 +777,29 @@ def portrait() -> str:
     name_y = CARD_Y + card_h + 52
     H = int(name_y + 34)
 
+    # Stretch the ramp over the subject's own tonal range (5th-95th
+    # percentile), otherwise a mostly mid-tone picture lands on one blue.
+    subject = sorted(l for line in cells for l, s in map(_luma_sat, line)
+                     if not _is_background(l, s) and l >= 40)
+    lo = subject[len(subject) // 20]
+    hi = subject[-len(subject) // 20 - 1]
+
     row_groups = []
     for r, line in enumerate(cells):
         dots = []
         for c, hx in enumerate(line):
-            R, G, B = (int(hx[i:i + 2], 16) for i in (0, 2, 4))
-            luma = 0.299 * R + 0.587 * G + 0.114 * B
-            sat = (max(R, G, B) - min(R, G, B)) / max(1, max(R, G, B))
+            luma, sat = _luma_sat(hx)
             x, y = gx + c * DOT, gy + r * DOT
-            if luma > 215 and sat < 0.14:           # background
-                dots.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="1.5" fill="#C9D1D9" fill-opacity=".22"/>')
+            if _is_background(luma, sat):
+                dots.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="1.5" fill="#93C5FD" fill-opacity=".14"/>')
             elif luma < 40:                          # ink lines, pupils, nose
-                dots.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="2.4" fill="#8FA3BF"/>')
+                dots.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="2.5" fill="{INK_BLUE}"/>')
             else:
-                # Halftone: brighter cells get bigger dots, which is what gives
-                # a flat fill its shading.
-                rad = 1.6 + 1.5 * min(1.0, luma / 200)
-                dots.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="{rad:.2f}" fill="{_hsl_tweak(hx)}"/>')
+                # Halftone: brighter cells get bigger and lighter dots, which
+                # is what gives a flat fill its shading.
+                t = (luma - lo) / max(1, hi - lo)
+                rad = 1.5 + 1.4 * max(0.0, min(1.0, t))
+                dots.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="{rad:.2f}" fill="{_ramp(t)}"/>')
         row_groups.append(f'<g class="rw" style="animation-delay:{0.2 + r * 0.028:.3f}s">{"".join(dots)}</g>')
 
     rng = random.Random(7)
