@@ -23,6 +23,7 @@ import pathlib
 import random
 import re
 import textwrap
+from html import escape
 from dataclasses import dataclass
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
@@ -472,7 +473,6 @@ TECH = [
 TILE_W, TILE_H, ICON = 100, 74, 36
 COLS = 6            # 6 x ~140px fits GitHub's README column with the summary marker
 TILE_PX = 92        # rendered width in the README
-NOTE_CHARS = 26    # hand-wrapped note width, see techstack_html()
 
 TILE_CSS = """
     svg { --panel:#F6F8FA; --ink:#1F2328; --dim:#636C76 }
@@ -511,6 +511,147 @@ def tile(t: Tech) -> str:
 """
 
 
+# TECH is ordered by group; these are the group sizes, in order.
+GROUPS = [("LANGUAGE", 9), ("ML / DL", 8), ("MODEL", 6), ("INFRA", 11)]
+assert sum(n for _, n in GROUPS) == len(TECH)
+
+CARD_W = 240        # viewBox width of an opened note
+CARD_PX = 228       # rendered width - 5 closed columns plus this still fit 830px
+CARD_CHARS = 37     # description wrap at 11.5px across the card's text width
+CHIP_CHARS = 27     # longest repo name a chip shows before truncating
+
+CARD_CSS = """
+    svg { --card:#FFFFFF; --ink:#1F2328; --tx:#3D4752; --dim:#6E7781; --chip:#F3F6FA; --ac:#0B6FD4 }
+    @media (prefers-color-scheme: dark) {
+      svg { --card:#111826; --ink:#F0F6FC; --tx:#C3CDD8; --dim:#8B949E; --chip:#1A2333; --ac:#36BCF7 }
+    }
+    .t  { font: 700 15px 'Segoe UI',Ubuntu,-apple-system,sans-serif; fill: var(--ink) }
+    .d  { font: 400 11.5px 'Segoe UI',Ubuntu,-apple-system,sans-serif; fill: var(--tx) }
+    .k  { font: 700 8.5px 'JetBrains Mono','Cascadia Code',Consolas,monospace; letter-spacing: 1.4px }
+    .c  { font: 500 9.5px 'JetBrains Mono','Cascadia Code',Consolas,monospace; fill: var(--ink) }
+    .mn { font: 800 10px 'Segoe UI',Ubuntu,-apple-system,sans-serif }
+
+    /* Entrance: the card settles, the rule draws, lines and chips follow. */
+    .card { animation: card .55s cubic-bezier(.2,.8,.2,1) both }
+    @keyframes card { from { opacity:0; transform: translateY(-8px) scale(.97) } to { opacity:1; transform:none } }
+    .in   { opacity:0; animation: in .45s cubic-bezier(.2,.8,.2,1) both }
+    @keyframes in { from { opacity:0; transform: translateX(-6px) } to { opacity:1; transform:none } }
+    .pop  { opacity:0; transform-box: fill-box; transform-origin: center;
+            animation: pop .4s cubic-bezier(.34,1.56,.64,1) both }
+    @keyframes pop { from { opacity:0; transform: scale(.6) } to { opacity:1; transform:none } }
+    .rule { stroke-dasharray: 212; stroke-dashoffset: 212; animation: draw .7s .25s cubic-bezier(.3,.7,.4,1) forwards }
+    @keyframes draw { to { stroke-dashoffset: 0 } }
+
+    /* Ambient, so the card still feels alive after the entrance has played. */
+    .sheen { animation: sheen 3.6s 1s ease-in-out infinite }
+    @keyframes sheen { 0% { transform: translateX(-120px) } 55%,100% { transform: translateX(380px) } }
+    .blink { animation: blink 1.1s steps(1) infinite }
+    @keyframes blink { 0%,50% { opacity:1 } 51%,100% { opacity:0 } }
+    .pulse { transform-box: fill-box; transform-origin: center; animation: pulse 2.2s ease-in-out infinite }
+    @keyframes pulse { 0%,100% { opacity:.35; transform: scale(1) } 50% { opacity:1; transform: scale(1.35) } }
+
+    @media (prefers-reduced-motion: reduce) {
+      .card,.in,.pop,.rule,.sheen,.blink,.pulse { animation: none !important; opacity: 1 }
+      .rule { stroke-dashoffset: 0 } .sheen { display: none }
+    }
+"""
+
+
+def group_of(i: int) -> str:
+    for name, n in GROUPS:
+        if i < n:
+            return name
+        i -= n
+    raise IndexError(i)
+
+
+def card(t: Tech, group: str) -> str:
+    """The note under an opened tile: header, drawn rule, description, repo chips."""
+    accent = t.border if t.border.startswith("var") else f"#{t.border or t.color}"
+    ink = "#1F2328" if _luma(t.color) > 160 else "#FFFFFF"
+    pad, w = 14, CARD_W
+
+    if t.glyph:
+        mark = (f'<path transform="translate({pad + 6} 22) scale({18 / 24:.4f})" '
+                f'fill="{ink}" d="{ICONS[t.glyph]}"/>')
+    else:
+        size = 10 if len(t.mono) <= 3 else 8.5
+        mark = (f'<text x="{pad + 15}" y="{31 + size * .36:.1f}" text-anchor="middle" class="mn" '
+                f'style="font-size:{size}px" fill="{ink}">{escape(t.mono)}</text>')
+    tag_w = len(group) * 6.6 + 14
+
+    out = [
+        f'<rect x="{pad}" y="16" width="30" height="30" rx="7" fill="#{t.color}"/>',
+        mark,
+        f'<text x="{pad + 40}" y="29" class="t">{escape(t.label)}</text>',
+        f'<rect x="{pad + 40}" y="35" width="{tag_w:.0f}" height="13" rx="6.5" fill="{accent}" fill-opacity=".14"/>',
+        f'<text x="{pad + 47}" y="44.5" class="k" fill="{accent}">{escape(group)}</text>',
+        f'<circle class="pulse" cx="{w - pad - 4}" cy="22" r="3" fill="{accent}"/>',
+        f'<line class="rule" x1="{pad}" y1="60" x2="{w - pad}" y2="60" stroke="url(#rim)" stroke-width="1.5" stroke-linecap="round"/>',
+    ]
+
+    y, step, delay = 80, 16, 0.35
+    lines = textwrap.wrap(t.what, CARD_CHARS)
+    for i, line in enumerate(lines):
+        out.append(f'<text x="{pad}" y="{y}" class="d in" style="animation-delay:{delay:.2f}s">{escape(line)}</text>')
+        if i == len(lines) - 1:
+            cx = pad + len(line) * 5.45 + 4     # caret just past the last word
+            out.append(f'<rect class="blink" x="{cx:.0f}" y="{y - 9}" width="6" height="11" rx="1" fill="{accent}" opacity=".8"/>')
+        y += step
+        delay += 0.07
+
+    if t.repos:
+        y += 10
+        out.append(f'<text x="{pad}" y="{y}" class="k in" fill="var(--dim)" style="animation-delay:{delay:.2f}s">USED IN</text>')
+        y += 9
+        x = pad
+        for r in t.repos:
+            name = r if len(r) <= CHIP_CHARS else r[:CHIP_CHARS - 1] + "…"
+            cw = len(name) * 5.75 + 24
+            if x + cw > w - pad:
+                x, y = pad, y + 26
+            delay += 0.08
+            out.append(
+                f'<g class="pop" style="animation-delay:{delay:.2f}s">'
+                f'<rect x="{x}" y="{y}" width="{cw:.0f}" height="20" rx="10" fill="var(--chip)" '
+                f'stroke="{accent}" stroke-opacity=".55"/>'
+                f'<circle cx="{x + 10}" cy="{y + 10}" r="2.6" fill="{accent}"/>'
+                f'<text x="{x + 17}" y="{y + 13.5}" class="c">{escape(name)}</text></g>'
+            )
+            x += cw + 6
+        y += 20
+
+    h = int(y + 16)
+    body = "\n    ".join(out)
+    return f"""<svg xmlns="http://www.w3.org/2000/svg" width="{w}" height="{h}" viewBox="0 0 {w} {h}" role="img" aria-label="{escape(t.label)}: {escape(t.what)}">
+  <defs>
+    <linearGradient id="rim" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" style="stop-color:{accent}"/>
+      <stop offset="50%" style="stop-color:var(--ac)"/>
+      <stop offset="100%" style="stop-color:{accent}"/>
+      <animateTransform attributeName="gradientTransform" type="rotate" from="0 .5 .5" to="360 .5 .5" dur="6s" repeatCount="indefinite"/>
+    </linearGradient>
+    <linearGradient id="glare" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0"/>
+      <stop offset="50%" stop-color="#FFFFFF" stop-opacity=".16"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+    <clipPath id="clip"><rect x="1" y="1" width="{w - 2}" height="{h - 2}" rx="12"/></clipPath>
+  </defs>
+  <style>{CARD_CSS}  </style>
+  <g class="card">
+    <rect x="1" y="1" width="{w - 2}" height="{h - 2}" rx="12" fill="var(--card)" stroke="url(#rim)" stroke-width="2"/>
+    <g clip-path="url(#clip)">
+      <rect x="0" y="0" width="{w}" height="4" fill="{accent}"/>
+      <rect x="0" y="0" width="{w}" height="64" fill="{accent}" fill-opacity=".06"/>
+      <g class="sheen"><rect x="0" y="0" width="70" height="{h}" fill="url(#glare)" transform="skewX(-20)"/></g>
+    </g>
+    {body}
+  </g>
+</svg>
+"""
+
+
 def techstack_html() -> str:
     """The README grid: every tile is a <details>, so a click opens its notes.
 
@@ -521,19 +662,20 @@ def techstack_html() -> str:
     image already inside an <a name> is left alone, and a name-only anchor
     does nothing on click, so the click reaches the <summary>.
     """
-    # GitHub lays README tables out at max-content width, so an opened note
-    # would stretch its column to one long line. Breaking it by hand keeps
-    # the column close to the tile's width.
+    # The opened note is an SVG card (README markup can't be styled or
+    # animated, an image can), followed by real links since an image can't
+    # carry them. GitHub lays README tables out at max-content width, so the
+    # card has a fixed width and the links are one per line.
     cells = []
     for t in TECH:
-        notes = "<br/>".join(textwrap.wrap(t.what, NOTE_CHARS))
-        if t.repos:
-            notes += "<br/><br/>" + "<br/>".join(
-                f'📁 <a href="{GH}{r}">{r}</a>' for r in t.repos)
+        links = "<br/>".join(f'↗ <a href="{GH}{r}">{r}</a>' for r in t.repos)
         cells.append(
             f'<td align="center" valign="top"><details><summary>'
             f'<a name="tech-{t.key}"><img src="assets/tech/{t.key}.svg" width="{TILE_PX}" alt="{t.label}" /></a>'
-            f'</summary><sub>{notes}</sub></details></td>'
+            f'</summary><a name="note-{t.key}"><img src="assets/tech/{t.key}-card.svg" width="{CARD_PX}" '
+            f'alt="{escape(t.what)}" /></a>'
+            + (f'<br/><sub>{links}</sub>' if links else "")
+            + '</details></td>'
         )
     rows = ["<tr>\n" + "\n".join(cells[i:i + COLS]) + "\n</tr>"
             for i in range(0, len(cells), COLS)]
@@ -563,9 +705,10 @@ def main() -> None:
     tech_dir.mkdir(exist_ok=True)
     for old in tech_dir.glob("*.svg"):
         old.unlink()
-    for t in TECH:
+    for i, t in enumerate(TECH):
         (tech_dir / f"{t.key}.svg").write_text(tile(t), encoding="utf-8")
-    print(f"wrote {len(TECH)} tiles to assets/tech/")
+        (tech_dir / f"{t.key}-card.svg").write_text(card(t, group_of(i)), encoding="utf-8")
+    print(f"wrote {len(TECH)} tiles and cards to assets/tech/")
     patch_readme()
 
 
