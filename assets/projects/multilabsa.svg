@@ -21,6 +21,15 @@
             --chip:#1A2333; --ac:#36BCF7 }
     }
 
+    .ml { animation: ml 4s ease-in-out infinite } .mr { animation: mr 4s ease-in-out infinite }
+    @keyframes ml { 0%,15% { transform:none; opacity:1 } 45% { transform: translateX(43px); opacity:.2 } 55%,100% { transform:none; opacity:1 } }
+    @keyframes mr { 0%,15% { transform:none; opacity:1 } 45% { transform: translateX(-43px); opacity:.2 } 55%,100% { transform:none; opacity:1 } }
+    .fu { opacity:0; animation: fu 4s ease-in-out infinite }
+    @keyframes fu { 0%,38% { opacity:0 } 45%,60% { opacity:1 } 75%,100% { opacity:0 } }
+    .vt { font: 600 7.5px 'JetBrains Mono','Cascadia Code',Consolas,monospace }
+    .vt:not([fill]) { fill: var(--dim) }
+    .pl { transform-box: fill-box; transform-origin: center; animation: pl 2s ease-in-out infinite }
+    @keyframes pl { 0%,100% { transform: scale(1) } 50% { transform: scale(1.6) } }
     svg { --line:#D8DEE4 }
     @media (prefers-color-scheme: dark) { svg { --line:#253043 } }
     .card { animation: card .7s 0.32s cubic-bezier(.22,1,.36,1) both }
@@ -48,7 +57,14 @@
     <text x="36" y="42.5" text-anchor="middle" style="font:800 13px 'Segoe UI',Ubuntu,-apple-system,sans-serif" fill="#FFFFFF">ML</text>
     <text x="66" y="30" style="font:700 8.5px 'JetBrains Mono','Cascadia Code',Consolas,monospace;letter-spacing:1.6px" fill="#7C4DFF">RESEARCH</text>
     <text x="66" y="50" style="font:700 17px 'Segoe UI',Ubuntu,-apple-system,sans-serif" fill="var(--ink)">MultiLABSA</text>
-    <circle class="pulse" cx="378" cy="26" r="3.5" fill="#7C4DFF"/>
+    <g transform="translate(264,16)">
+      <g class="ml"><circle cx="16" cy="20" r="10" fill="#7C4DFF" fill-opacity=".2" stroke="#7C4DFF"/>
+        <text x="16" y="23" text-anchor="middle" class="vt" fill="#7C4DFF">mT5</text></g>
+      <g class="mr"><circle cx="102" cy="20" r="10" fill="#7C4DFF" fill-opacity=".2" stroke="#7C4DFF"/>
+        <text x="102" y="23" text-anchor="middle" class="vt" fill="#7C4DFF">XLM</text></g>
+      <circle cx="59" cy="20" r="13" fill="#7C4DFF" class="fu"/>
+      <text x="59" y="23" text-anchor="middle" class="vt fu" fill="#FFFFFF" font-weight="800">fuse</text>
+      <text x="59" y="46" text-anchor="middle" class="vt">confidence fusion</text></g>
     <text x="18" y="78" style="font:600 11.5px 'Segoe UI',Ubuntu,-apple-system,sans-serif" fill="var(--dim)">Dual-teacher multilingual quad prediction</text>
     <g class="pop" style="animation-delay:0.35s"><rect x="18.0" y="92" width="116.0" height="54" rx="9" fill="#7C4DFF" fill-opacity=".09" stroke="#7C4DFF" stroke-opacity=".35"/><text x="30.0" y="118" style="font:800 18px 'Segoe UI',Ubuntu,-apple-system,sans-serif" fill="#7C4DFF">2</text><text x="30.0" y="136" style="font:500 9.5px 'Segoe UI',Ubuntu,-apple-system,sans-serif" fill="var(--dim)">teachers: mT5 + XLM-R</text></g>
     <g class="pop" style="animation-delay:0.45s"><rect x="142.0" y="92" width="116.0" height="54" rx="9" fill="#7C4DFF" fill-opacity=".09" stroke="#7C4DFF" stroke-opacity=".35"/><text x="154.0" y="118" style="font:800 18px 'Segoe UI',Ubuntu,-apple-system,sans-serif" fill="#7C4DFF">4-tuple</text><text x="154.0" y="136" style="font:500 9.5px 'Segoe UI',Ubuntu,-apple-system,sans-serif" fill="var(--dim)">quads per opinion</text></g>

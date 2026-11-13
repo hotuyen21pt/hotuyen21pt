@@ -21,6 +21,14 @@
             --chip:#1A2333; --ac:#36BCF7 }
     }
 
+    .sc { animation: sc 3s ease-in-out infinite }
+    @keyframes sc { 0%,100% { transform: translateY(1px); opacity:.2 } 50% { transform: translateY(46px); opacity:.9 } }
+    .bb { stroke-dasharray: 4 3; animation: bb 1.6s ease-in-out infinite }
+    @keyframes bb { 0%,100% { stroke-opacity:.35 } 50% { stroke-opacity:1 } }
+    .vt { font: 600 7.5px 'JetBrains Mono','Cascadia Code',Consolas,monospace }
+    .vt:not([fill]) { fill: var(--dim) }
+    .pl { transform-box: fill-box; transform-origin: center; animation: pl 2s ease-in-out infinite }
+    @keyframes pl { 0%,100% { transform: scale(1) } 50% { transform: scale(1.6) } }
     svg { --line:#D8DEE4 }
     @media (prefers-color-scheme: dark) { svg { --line:#253043 } }
     .card { animation: card .7s 0.16s cubic-bezier(.22,1,.36,1) both }
@@ -48,7 +56,14 @@
     <text x="36" y="42.5" text-anchor="middle" style="font:800 13px 'Segoe UI',Ubuntu,-apple-system,sans-serif" fill="#FFFFFF">CX</text>
     <text x="66" y="30" style="font:700 8.5px 'JetBrains Mono','Cascadia Code',Consolas,monospace;letter-spacing:1.6px" fill="#0EA5E9">PAPER REPRODUCTION</text>
     <text x="66" y="50" style="font:700 17px 'Segoe UI',Ubuntu,-apple-system,sans-serif" fill="var(--ink)">CXR-VQA</text>
-    <circle class="pulse" cx="378" cy="26" r="3.5" fill="#0EA5E9"/>
+    <g transform="translate(264,16)">
+      <rect x="28" y="0" width="62" height="50" rx="6" fill="#0EA5E9" fill-opacity=".07" stroke="#0EA5E9" stroke-opacity=".35"/>
+      <line x1="59" y1="6" x2="59" y2="46" stroke="#0EA5E9" stroke-opacity=".45" stroke-width="2"/>
+      <path d="M57,10 Q44,8 36,15" fill="none" stroke="#0EA5E9" stroke-opacity=".4"/><path d="M61,10 Q74,8 82,15" fill="none" stroke="#0EA5E9" stroke-opacity=".4"/><path d="M57,18 Q44,16 36,23" fill="none" stroke="#0EA5E9" stroke-opacity=".4"/><path d="M61,18 Q74,16 82,23" fill="none" stroke="#0EA5E9" stroke-opacity=".4"/><path d="M57,26 Q44,24 36,31" fill="none" stroke="#0EA5E9" stroke-opacity=".4"/><path d="M61,26 Q74,24 82,31" fill="none" stroke="#0EA5E9" stroke-opacity=".4"/><path d="M57,34 Q44,32 36,39" fill="none" stroke="#0EA5E9" stroke-opacity=".4"/><path d="M61,34 Q74,32 82,39" fill="none" stroke="#0EA5E9" stroke-opacity=".4"/>
+      <rect x="64" y="17" width="18" height="15" rx="2" fill="none" stroke="#0EA5E9" stroke-width="1.6" class="bb"/>
+      <text x="96" y="22" class="vt" fill="#0EA5E9">bbox</text>
+      <text x="96" y="32" class="vt">+ VQA</text>
+      <rect x="28" y="0" width="62" height="2" fill="#0EA5E9" class="sc"/></g>
     <text x="18" y="78" style="font:600 11.5px 'Segoe UI',Ubuntu,-apple-system,sans-serif" fill="var(--dim)">Explainable chest X-ray VQA (arXiv:2511.00504)</text>
     <g class="pop" style="animation-delay:0.35s"><rect x="18.0" y="92" width="116.0" height="54" rx="9" fill="#0EA5E9" fill-opacity=".09" stroke="#0EA5E9" stroke-opacity=".35"/><text x="30.0" y="118" style="font:800 18px 'Segoe UI',Ubuntu,-apple-system,sans-serif" fill="#0EA5E9">4B</text><text x="30.0" y="136" style="font:500 9.5px 'Segoe UI',Ubuntu,-apple-system,sans-serif" fill="var(--dim)">MedGemma + LoRA</text></g>
     <g class="pop" style="animation-delay:0.45s"><rect x="142.0" y="92" width="116.0" height="54" rx="9" fill="#0EA5E9" fill-opacity=".09" stroke="#0EA5E9" stroke-opacity=".35"/><text x="154.0" y="118" style="font:800 18px 'Segoe UI',Ubuntu,-apple-system,sans-serif" fill="#0EA5E9">60%</text><text x="154.0" y="136" style="font:500 9.5px 'Segoe UI',Ubuntu,-apple-system,sans-serif" fill="var(--dim)">released boxes wrong</text></g>

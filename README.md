@@ -16,6 +16,8 @@ I build **NLP and multimodal AI systems end to end** — from reading the paper,
 implementation with tests, to a Docker image someone else can actually run.
 *Faithful to the paper first. Optimised second. Always reproducible.*
 
+<a name="asqp"><img src="assets/asqp.svg" width="100%" alt="Live demo: a hotel review is typed, its aspects and opinions highlighted, and (aspect, opinion, category, sentiment) quads extracted" /></a>
+
 <a name="track"><img src="assets/track.svg" width="100%" alt="Track record: public repositories, 3 paper reproductions, 275+ tests passing, 1.95M reviews analysed" /></a>
 
 - **Reproductions that hold up** — ACL/NAACL baselines rebuilt line by line against the paper,

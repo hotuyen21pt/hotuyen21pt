@@ -582,34 +582,70 @@ TRACK_STATIC = [("3", "paper reproductions"), ("275+", "tests passing"),
                 ("1.95M", "reviews analysed")]
 
 
+ODO_ADV = 15.0          # advance of one glyph in the odometer (textLength pins it)
+ODO_LINE = 30           # height of one digit cell in a rolling column
+ODO_LOOP = 10           # seconds: roll in, hold, roll again
+
+
+def _odometer(val: str, x: float, y: float, acc: str, idx: int) -> tuple[str, str]:
+    """Draw `val` with each digit on a column of 0-9 twice over that rolls up
+    to its value, odometer style. Non-digits (".", "M", "+") stand still.
+    Returns (markup, clip-path defs)."""
+    top = y - 24                                   # top of the digit window
+    parts, cx = [], x
+    for j, ch in enumerate(val):
+        if ch.isdigit():
+            d = int(ch)
+            column = "".join(
+                f'<text x="{cx:.1f}" y="{y + k * ODO_LINE}" class="num" fill="{acc}" textLength="{ODO_ADV - 1:.0f}" '
+                f'lengthAdjust="spacingAndGlyphs">{k % 10}</text>' for k in range(20))
+            # Land on the second pass so every digit spins at least once.
+            to = -(10 + d) * ODO_LINE
+            parts.append(f'<g class="roll" style="--to:{to}px;animation-delay:{0.15 + idx * 0.12 + j * 0.08:.2f}s">'
+                         f'{column}</g>')
+        else:
+            parts.append(f'<text x="{cx:.1f}" y="{y}" class="num" fill="{acc}">{esc(ch)}</text>')
+        cx += ODO_ADV
+    clip = (f'<clipPath id="odo{idx}"><rect x="{x - 2:.1f}" y="{top}" width="{len(val) * ODO_ADV + 4:.0f}" '
+            f'height="{ODO_LINE}"/></clipPath>')
+    return f'<g clip-path="url(#odo{idx})">{"".join(parts)}</g>', clip
+
+
 def track_card(repos: int) -> str:
-    """Four headline numbers in the project cards' metric-box style."""
+    """Four headline numbers whose digits roll in like an odometer, re-rolling
+    every ODO_LOOP seconds."""
     items = [(str(repos), "public repositories")] + TRACK_STATIC
     w, h, gap = 830, 78, 12
     bw = (w - 2 - gap * (len(items) - 1)) / len(items)
     accents = ["var(--ac)", "var(--hi)"]
-    boxes = []
+    boxes, clips = [], []
     for i, (val, label) in enumerate(items):
         x = 1 + i * (bw + gap)
         acc = accents[i % len(accents)]
+        num, clip = _odometer(val, x + 20, 42, acc, i)
+        clips.append(clip)
         boxes.append(
             f'  <g class="pop" style="animation-delay:{0.1 + i * 0.1:.2f}s">'
             f'<rect x="{x:.1f}" y="1" width="{bw:.1f}" height="{h - 2}" rx="12" fill="var(--panel)" '
             f'stroke="var(--bd)"/>'
             f'<rect x="{x:.1f}" y="14" width="3" height="{h - 28}" rx="1.5" fill="{acc}"/>'
-            f'<text x="{x + 20:.1f}" y="41" class="num" fill="{acc}">{esc(val)}</text>'
-            f'<text x="{x + 20:.1f}" y="60" class="lbl">{esc(label)}</text></g>'
+            f'{num}<text x="{x + 20:.1f}" y="62" class="lbl">{esc(label)}</text></g>'
         )
     css = """
-    .num { font: 800 24px 'Segoe UI',Ubuntu,-apple-system,sans-serif }
+    .num { font: 800 24px 'JetBrains Mono','Cascadia Code',Consolas,monospace }
     .lbl { font: 500 10.5px 'JetBrains Mono','Cascadia Code',Consolas,monospace; fill: var(--mu); letter-spacing: .4px }
     .pop { opacity:0; animation: pop .55s cubic-bezier(.22,1,.36,1) both }
     @keyframes pop { from { opacity:0; transform: translateY(6px) } to { opacity:1; transform:none } }
-    @media (prefers-reduced-motion: reduce) { .pop { animation: none; opacity: 1 } }
-"""
+    .roll { animation: roll %ds cubic-bezier(.16,1,.3,1) infinite both }
+    @keyframes roll { 0%% { transform: none } 22%%,88%% { transform: translateY(var(--to)) } 100%% { transform: translateY(var(--to)) } }
+    @media (prefers-reduced-motion: reduce) {
+      .pop { animation: none; opacity: 1 } .roll { animation: none; transform: translateY(var(--to)) }
+    }
+""" % ODO_LOOP
     label = " · ".join(f"{v} {l}" for v, l in items)
     return (f'<svg xmlns="http://www.w3.org/2000/svg" width="{w}" height="{h}" viewBox="0 0 {w} {h}" '
             f'role="img" aria-label="{esc(label)}">\n'
+            f'  <defs>{"".join(clips)}</defs>\n'
             f'  <style>{THEME}{css}  </style>\n' + "\n".join(boxes) + "\n</svg>\n")
 
 

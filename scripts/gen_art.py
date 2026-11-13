@@ -957,6 +957,7 @@ SECTIONS = [
     ("telemetry", "Telemetry", "rendered daily from the GitHub API"),
 ]
 SECTION_W = 830
+DECODE_STEPS, DECODE_STEP, DECODE_LOOP = 8, 0.09, 9   # frames, seconds each, seconds per loop
 
 
 def section_title(n: int, title: str, hint: str) -> str:
@@ -964,18 +965,38 @@ def section_title(n: int, title: str, hint: str) -> str:
     no underline of its own; the travelling-light divider above it is the
     only break between sections."""
     w, h = SECTION_W, 56
+    # Decode effect: for the first DECODE_STEPS frames of every DECODE_LOOP
+    # seconds the title shows scrambled glyphs, then resolves. Each frame is
+    # its own <text>, visible only inside its slice of the loop.
+    rng = random.Random(n * 97)
+    pool = "ABCDEFGHJKLMNPQRSTUVWXYZ0123456789#%&*/<>"
+    frames, kf = [], []
+    for i in range(DECODE_STEPS):
+        # Characters lock in left to right as the frames advance.
+        locked = int(len(title) * i / DECODE_STEPS)
+        txt = title[:locked] + "".join(c if c == " " else rng.choice(pool) for c in title[locked:])
+        a, b = 100 * i * DECODE_STEP / DECODE_LOOP, 100 * (i + 1) * DECODE_STEP / DECODE_LOOP
+        kf.append(f"@keyframes f{i} {{ 0%,{a:.2f}% {{ opacity:0 }} {a + .01:.2f}%,{b:.2f}% {{ opacity:1 }} "
+                  f"{b + .01:.2f}%,100% {{ opacity:0 }} }}")
+        frames.append(f'<text x="0" y="46" class="tt fr" style="animation-name:f{i}">{escape(txt)}</text>')
+    done = 100 * DECODE_STEPS * DECODE_STEP / DECODE_LOOP
+    kf.append(f"@keyframes fin {{ 0%,{done:.2f}% {{ opacity:0 }} {done + .01:.2f}%,100% {{ opacity:1 }} }}")
     return f"""<svg xmlns="http://www.w3.org/2000/svg" width="{w}" height="{h}" viewBox="0 0 {w} {h}" role="img" aria-label="{escape(title)}">
   <style>{UI_CSS}
     .no {{ font: 700 12px {MONO_FONT}; fill: var(--ac); letter-spacing: 1.5px }}
     .tt {{ font: 800 25px {FONT}; fill: var(--ink) }}
+    .fr {{ opacity:0; fill: var(--ac); animation-duration: {DECODE_LOOP}s; animation-iteration-count: infinite; animation-timing-function: linear }}
+    .fin {{ animation: fin {DECODE_LOOP}s linear infinite }}
     .hn {{ font: 500 10.5px {MONO_FONT}; fill: var(--mu); letter-spacing: .4px }}
     .in {{ animation: in .6s {EASE} both }}
     @keyframes in {{ from {{ opacity:0; transform: translateX(-8px) }} to {{ opacity:1; transform:none }} }}
-    @media (prefers-reduced-motion: reduce) {{ .in {{ animation: none }} }}
+    {chr(10).join("    " + k for k in kf)}
+    @media (prefers-reduced-motion: reduce) {{ .in,.fin {{ animation: none }} .fr {{ display: none }} }}
   </style>
   <g class="in">
     <text x="0" y="17" class="no">{n:02d} / {len(SECTIONS):02d}</text>
-    <text x="0" y="46" class="tt">{escape(title)}</text>
+    {chr(10).join("    " + f for f in frames)}
+    <text x="0" y="46" class="tt fin">{escape(title)}</text>
   </g>
   <text x="{w}" y="46" text-anchor="end" class="hn">{escape(hint)}</text>
 </svg>
@@ -1024,6 +1045,159 @@ def focus_cards() -> str:
     @media (prefers-reduced-motion: reduce) {{ .pop {{ animation: none; opacity: 1 }} }}
   </style>
 {chr(10).join(cards)}
+</svg>
+"""
+
+
+# ------------------------------------------------------------ live ASQP demo
+
+# Illustrative sentences, not dataset rows: one English, one Vietnamese, one
+# with implicit aspects (None), the three cases the research is about.
+ASQP_SENTENCES = [
+    ("The room was spotless but the breakfast was overpriced.",
+     [("room", "spotless", "ROOMS#CLEANLINESS", "POS"),
+      ("breakfast", "overpriced", "FOOD#PRICES", "NEG")]),
+    ("Nhân viên lễ tân rất nhiệt tình, phòng thì hơi nhỏ.",
+     [("Nhân viên lễ tân", "rất nhiệt tình", "SERVICE#GENERAL", "POS"),
+      ("phòng", "hơi nhỏ", "ROOMS#DESIGN", "NEG")]),
+    ("Honestly worth every penny, would stay again.",
+     [(None, "worth every penny", "HOTEL#PRICES", "POS"),
+      (None, "would stay again", "HOTEL#GENERAL", "POS")]),
+]
+ASQP_SLOT = 7.0         # seconds each sentence is on screen
+ASQP_CW = 11.0          # forced advance per character (textLength), so spans line up
+SENT_COLORS = {"POS": "#3FB950", "NEG": "#F85149"}
+
+
+def _pct(sec: float) -> float:
+    """Seconds into a slot -> percent of the whole loop."""
+    return 100 * sec / (ASQP_SLOT * len(ASQP_SENTENCES))
+
+
+def asqp_demo() -> str:
+    """A review types itself out, aspects and opinions light up, and the quads
+    assemble underneath - the research shown rather than described.
+
+    Every sentence runs on the same keyframes over the full loop, offset by
+    its slot, so the loop needs one set of keyframes per *kind* of element.
+    The text is laid out with textLength, which pins each character to
+    ASQP_CW whatever monospace font the reader has, so the highlight boxes
+    computed here land on the right words.
+    """
+    import unicodedata
+    w, x0, ty = 830, 56, 96
+    loop = ASQP_SLOT * len(ASQP_SENTENCES)
+    p = _pct
+
+    # Within a slot: type 0-2.4s, highlights from 2.6s, quads from 3.4s,
+    # hold, fade from 6.3s.
+    css = [
+        f"@keyframes grp {{ 0% {{ opacity:0 }} {p(.15):.2f}% {{ opacity:1 }} {p(6.3):.2f}% {{ opacity:1 }} "
+        f"{p(6.8):.2f}%,100% {{ opacity:0 }} }}",
+        ".grp { opacity:0; animation: grp %.1fs linear infinite both }" % loop,
+        f"@keyframes hl {{ 0%,{p(2.6):.2f}% {{ opacity:0; transform: scaleX(0) }} "
+        f"{p(3.0):.2f}%,100% {{ opacity:1; transform: scaleX(1) }} }}",
+        f"@keyframes hl2 {{ 0%,{p(3.0):.2f}% {{ opacity:0; transform: scaleX(0) }} "
+        f"{p(3.4):.2f}%,100% {{ opacity:1; transform: scaleX(1) }} }}",
+        f"@keyframes tu {{ 0%,{p(3.4):.2f}% {{ opacity:0; transform: translateX(-8px) }} "
+        f"{p(3.9):.2f}%,100% {{ opacity:1; transform: none }} }}",
+        f"@keyframes tu2 {{ 0%,{p(4.1):.2f}% {{ opacity:0; transform: translateX(-8px) }} "
+        f"{p(4.6):.2f}%,100% {{ opacity:1; transform: none }} }}",
+        ".hl,.hl2 { transform-box: fill-box; transform-origin: left center }",
+    ]
+    for name in ("hl", "hl2", "tu", "tu2"):
+        css.append(f".{name} {{ opacity:0; animation: {name} {loop:.1f}s cubic-bezier(.22,1,.36,1) infinite both }}")
+
+    groups, defs = [], []
+    for k, (sentence, quads) in enumerate(ASQP_SENTENCES):
+        sentence = unicodedata.normalize("NFC", sentence)
+        n = len(sentence)
+        tw = n * ASQP_CW
+        delay = k * ASQP_SLOT
+        # Typing: a clip that widens one character at a time, and a caret on it.
+        css.append(f"@keyframes typ{k} {{ 0% {{ width:0; animation-timing-function: steps({n}, end) }} "
+                   f"{p(2.4):.2f}%,100% {{ width:{tw:.0f}px }} }}")
+        css.append(f"@keyframes car{k} {{ 0% {{ transform:none; animation-timing-function: steps({n}, end) }} "
+                   f"{p(2.4):.2f}%,100% {{ transform: translateX({tw:.0f}px) }} }}")
+        defs.append(f'<clipPath id="ty{k}"><rect x="{x0}" y="{ty - 22}" height="34" width="0" '
+                    f'style="animation: typ{k} {loop:.1f}s {delay:.1f}s infinite both"/></clipPath>')
+
+        marks, tuples = [], []
+        for qi, (asp, opi, cat, pol) in enumerate(quads):
+            cls = "hl" if qi == 0 else "hl2"
+            tcls = "tu" if qi == 0 else "tu2"
+            st = f'style="animation-delay:{delay:.1f}s"'
+            for span, kind in ((asp, "a"), (opi, "o")):
+                if not span:
+                    continue
+                s = sentence.find(unicodedata.normalize("NFC", span))
+                assert s >= 0, (span, sentence)
+                x, wd = x0 + s * ASQP_CW, len(span) * ASQP_CW
+                if kind == "a":
+                    marks.append(
+                        f'<g class="{cls}" {st}><rect x="{x - 2:.1f}" y="{ty - 19}" width="{wd + 4:.1f}" height="26" rx="5" '
+                        f'fill="var(--ac)" fill-opacity=".14"/><rect x="{x:.1f}" y="{ty + 6}" width="{wd:.1f}" height="2.5" '
+                        f'rx="1.2" fill="var(--ac)"/><text x="{x:.1f}" y="{ty - 26}" class="lb" fill="var(--ac)">ASPECT</text></g>')
+                else:
+                    marks.append(
+                        f'<g class="{cls}" {st}><rect x="{x - 2:.1f}" y="{ty - 19}" width="{wd + 4:.1f}" height="26" rx="5" '
+                        f'fill="var(--hi)" fill-opacity=".16" stroke="var(--hi)" stroke-opacity=".5"/>'
+                        f'<text x="{x:.1f}" y="{ty - 26}" class="lb" fill="var(--hi)">OPINION</text></g>')
+            a_txt = f'<tspan fill="var(--ac)">{escape(asp)}</tspan>' if asp else '<tspan fill="var(--mu)" font-style="italic">NULL</tspan>'
+            tuples.append(
+                f'<text x="{x0}" y="{ty + 42 + qi * 24}" class="tp {tcls}" {st}>'
+                f'<tspan fill="var(--mu)">→ (</tspan>{a_txt}<tspan fill="var(--mu)">, </tspan>'
+                f'<tspan fill="var(--hi)">{escape(opi)}</tspan><tspan fill="var(--mu)">, </tspan>'
+                f'<tspan fill="var(--ink)">{escape(cat)}</tspan><tspan fill="var(--mu)">, </tspan>'
+                f'<tspan fill="{SENT_COLORS[pol]}" font-weight="800">{pol}</tspan><tspan fill="var(--mu)">)</tspan></text>')
+
+        implicit = any(a is None for a, *_ in quads)
+        tag = ("implicit aspects" if implicit else
+               "vietnamese" if any(ord(c) > 127 for c in sentence) else "english")
+        groups.append(f"""  <g class="grp" style="animation-delay:{delay:.1f}s">
+    <text x="{w - 24}" y="56" text-anchor="end" class="tg">{k + 1}/{len(ASQP_SENTENCES)} · {tag}</text>
+    {''.join(marks)}
+    <text x="{x0}" y="{ty}" class="sn" textLength="{tw:.0f}" lengthAdjust="spacingAndGlyphs" clip-path="url(#ty{k})">{escape(sentence)}</text>
+    <rect x="{x0 + 1}" y="{ty - 17}" width="2" height="22" fill="var(--ac)" style="animation: car{k} {loop:.1f}s {delay:.1f}s infinite both"/>
+    {''.join(tuples)}
+  </g>""")
+
+    h = ty + 42 + 24 + 44
+    body = "\n".join(groups)
+    return f"""<svg xmlns="http://www.w3.org/2000/svg" width="{w}" height="{h}" viewBox="0 0 {w} {h}" role="img" aria-label="Aspect sentiment quad prediction, demonstrated on three hotel reviews">
+  <defs>
+    <linearGradient id="edge" x1="0" y1="0" x2="{w}" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" style="stop-color:var(--ac)"/><stop offset="100%" style="stop-color:var(--hi)"/>
+    </linearGradient>
+    <clipPath id="win"><rect width="{w}" height="{h}" rx="12"/></clipPath>
+    {''.join(defs)}
+  </defs>
+  <style>{UI_CSS}
+    .sn {{ font: 500 18px {MONO_FONT}; fill: var(--ink) }}
+    .tp {{ font: 500 13px {MONO_FONT} }}
+    .lb {{ font: 700 8.5px {MONO_FONT}; letter-spacing: 1.4px }}
+    .tg {{ font: 500 10.5px {MONO_FONT}; fill: var(--mu) }}
+    .cm {{ font: 400 11px {MONO_FONT}; fill: var(--mu) }}
+    .ft {{ font: 400 10.5px {MONO_FONT}; fill: var(--mu) }}
+    {chr(10).join("    " + c for c in css)}
+    @media (prefers-reduced-motion: reduce) {{
+      .grp,.hl,.hl2,.tu,.tu2 {{ animation: none !important; opacity: 0 }}
+      .grp:first-of-type,.grp:first-of-type .hl,.grp:first-of-type .hl2,.grp:first-of-type .tu,.grp:first-of-type .tu2 {{ opacity: 1 }}
+    }}
+  </style>
+  <g clip-path="url(#win)">
+    <rect width="{w}" height="{h}" fill="var(--bg)"/>
+    <rect width="{w}" height="34" fill="var(--panel)"/>
+    <rect y="33" width="{w}" height="1" fill="var(--bd)"/>
+    <rect width="{w}" height="2" fill="url(#edge)"/>
+    <circle cx="20" cy="18" r="4" fill="#FF5F57"/><circle cx="34" cy="18" r="4" fill="#FEBC2E"/><circle cx="48" cy="18" r="4" fill="#28C840"/>
+    <text x="66" y="22" class="cm">~/hotuyen21pt $ asqp --live "hotel review"</text>
+    <text x="30" y="{ty}" class="sn" fill="var(--ac)" style="fill:var(--ac)">›</text>
+{body}
+    <rect y="{h - 30}" width="{w}" height="1" fill="var(--bd)"/>
+    <text x="24" y="{h - 11}" class="ft">aspect sentiment quad prediction · one review in, (aspect, opinion, category, sentiment) out</text>
+  </g>
+  <rect x=".5" y=".5" width="{w - 1}" height="{h - 1}" rx="12" fill="none" stroke="var(--bd)"/>
 </svg>
 """
 
@@ -1120,14 +1294,151 @@ PROJ_LINES = max(len(textwrap.wrap(p.what, PROJ_CHARS)) for p in PROJECTS)
 PROJ_H = 166 + PROJ_LINES * 16 + 84
 
 
+def project_visual(key: str, acc: str) -> tuple[str, str]:
+    """A small looping illustration of what the project does, drawn in a
+    118x50 box at the card's top right. Returns (markup, css)."""
+    v = {
+        # Sentiment drift over 2022-2025: the line draws, holds, and redraws.
+        "prism": (f"""
+      <path d="M0,34 L20,26 L40,30 L60,17 L80,21 L100,8 L118,12 L118,40 L0,40 Z" fill="{acc}" fill-opacity=".10" class="fd"/>
+      <polyline points="0,34 20,26 40,30 60,17 80,21 100,8 118,12" fill="none" stroke="{acc}" stroke-width="2"
+                stroke-linejoin="round" stroke-linecap="round" class="ln"/>
+      <circle cx="118" cy="12" r="3" fill="{acc}" class="pl"/>
+      <line x1="0" y1="40" x2="118" y2="40" stroke="var(--line)"/>
+      <text x="0" y="49" class="vt">2022</text><text x="118" y="49" text-anchor="end" class="vt">2025</text>""",
+                  """
+    .ln { stroke-dasharray: 150; stroke-dashoffset: 150; animation: ln 5s ease-in-out infinite }
+    @keyframes ln { 0% { stroke-dashoffset:150 } 40%,85% { stroke-dashoffset:0 } 100% { stroke-dashoffset:-150 } }
+    .fd { animation: fd 5s ease-in-out infinite }
+    @keyframes fd { 0%,20% { opacity:0 } 45%,80% { opacity:1 } 100% { opacity:0 } }"""),
+
+        # Joint model vs a T5 -> BERT pipeline, data flowing through both.
+        "kltn": (f"""
+      <text x="0" y="13" class="vt">JOINT</text>
+      <rect x="34" y="4" width="84" height="13" rx="4" fill="{acc}" fill-opacity=".14" stroke="{acc}" stroke-opacity=".5"/>
+      <line x1="38" y1="10.5" x2="114" y2="10.5" stroke="{acc}" stroke-width="2" class="fl"/>
+      <text x="0" y="39" class="vt">PIPE</text>
+      <rect x="34" y="30" width="30" height="13" rx="4" fill="{acc}" fill-opacity=".14" stroke="{acc}" stroke-opacity=".5"/>
+      <text x="49" y="39.5" text-anchor="middle" class="vt" fill="{acc}">T5</text>
+      <line x1="66" y1="36.5" x2="84" y2="36.5" stroke="{acc}" stroke-width="2" class="fl"/>
+      <rect x="86" y="30" width="32" height="13" rx="4" fill="{acc}" fill-opacity=".14" stroke="{acc}" stroke-opacity=".5"/>
+      <text x="102" y="39.5" text-anchor="middle" class="vt" fill="{acc}">BERT</text>""",
+                 """
+    .fl { stroke-dasharray: 3 5; animation: fl 1s linear infinite }
+    @keyframes fl { to { stroke-dashoffset: -8 } }"""),
+
+        # A chest film with a grounded box and a scan line sweeping it.
+        "cxr": (f"""
+      <rect x="28" y="0" width="62" height="50" rx="6" fill="{acc}" fill-opacity=".07" stroke="{acc}" stroke-opacity=".35"/>
+      <line x1="59" y1="6" x2="59" y2="46" stroke="{acc}" stroke-opacity=".45" stroke-width="2"/>
+      {''.join(f'<path d="M57,{10 + i * 8} Q44,{8 + i * 8} 36,{15 + i * 8}" fill="none" stroke="{acc}" stroke-opacity=".4"/>'
+               f'<path d="M61,{10 + i * 8} Q74,{8 + i * 8} 82,{15 + i * 8}" fill="none" stroke="{acc}" stroke-opacity=".4"/>'
+               for i in range(4))}
+      <rect x="64" y="17" width="18" height="15" rx="2" fill="none" stroke="{acc}" stroke-width="1.6" class="bb"/>
+      <text x="96" y="22" class="vt" fill="{acc}">bbox</text>
+      <text x="96" y="32" class="vt">+ VQA</text>
+      <rect x="28" y="0" width="62" height="2" fill="{acc}" class="sc"/>""",
+                """
+    .sc { animation: sc 3s ease-in-out infinite }
+    @keyframes sc { 0%,100% { transform: translateY(1px); opacity:.2 } 50% { transform: translateY(46px); opacity:.9 } }
+    .bb { stroke-dasharray: 4 3; animation: bb 1.6s ease-in-out infinite }
+    @keyframes bb { 0%,100% { stroke-opacity:.35 } 50% { stroke-opacity:1 } }"""),
+
+        # Decide -> explain -> verify, with the check landing on each pass.
+        "evidencekd": (f"""
+      <line x1="18" y1="22" x2="51" y2="22" stroke="{acc}" stroke-width="2" class="fl"/>
+      <line x1="67" y1="22" x2="100" y2="22" stroke="{acc}" stroke-width="2" class="fl"/>
+      {''.join(f'<circle cx="{cx}" cy="22" r="9" fill="{acc}" fill-opacity=".15" stroke="{acc}"/>'
+               f'<text x="{cx}" y="25.5" text-anchor="middle" class="vt" fill="{acc}" font-weight="800">{l}</text>'
+               f'<text x="{cx}" y="44" text-anchor="middle" class="vt">{n}</text>'
+               for cx, l, n in ((9, "D", "decide"), (59, "E", "explain"), (109, "V", "verify")))}
+      <path d="M103,3 L107,7 L115,-1" fill="none" stroke="#3FB950" stroke-width="2.4" stroke-linecap="round" class="ck"/>""",
+                       """
+    .fl { stroke-dasharray: 3 5; animation: fl 1s linear infinite }
+    @keyframes fl { to { stroke-dashoffset: -8 } }
+    .ck { stroke-dasharray: 20; stroke-dashoffset: 20; animation: ck 2.4s ease-out infinite }
+    @keyframes ck { 0%,40% { stroke-dashoffset:20 } 60%,90% { stroke-dashoffset:0 } 100% { stroke-dashoffset:20 } }"""),
+
+        # Two teachers converge and fuse into one prediction.
+        "multilabsa": (f"""
+      <g class="ml"><circle cx="16" cy="20" r="10" fill="{acc}" fill-opacity=".2" stroke="{acc}"/>
+        <text x="16" y="23" text-anchor="middle" class="vt" fill="{acc}">mT5</text></g>
+      <g class="mr"><circle cx="102" cy="20" r="10" fill="{acc}" fill-opacity=".2" stroke="{acc}"/>
+        <text x="102" y="23" text-anchor="middle" class="vt" fill="{acc}">XLM</text></g>
+      <circle cx="59" cy="20" r="13" fill="{acc}" class="fu"/>
+      <text x="59" y="23" text-anchor="middle" class="vt fu" fill="#FFFFFF" font-weight="800">fuse</text>
+      <text x="59" y="46" text-anchor="middle" class="vt">confidence fusion</text>""",
+                       """
+    .ml { animation: ml 4s ease-in-out infinite } .mr { animation: mr 4s ease-in-out infinite }
+    @keyframes ml { 0%,15% { transform:none; opacity:1 } 45% { transform: translateX(43px); opacity:.2 } 55%,100% { transform:none; opacity:1 } }
+    @keyframes mr { 0%,15% { transform:none; opacity:1 } 45% { transform: translateX(-43px); opacity:.2 } 55%,100% { transform:none; opacity:1 } }
+    .fu { opacity:0; animation: fu 4s ease-in-out infinite }
+    @keyframes fu { 0%,38% { opacity:0 } 45%,60% { opacity:1 } 75%,100% { opacity:0 } }"""),
+
+        # A reasoning tree grows and the rewarded leaf lights up.
+        "s2it": (f"""
+      <path d="M59,4 L30,24 M59,4 L88,24 M30,24 L16,44 M30,24 L44,44 M88,24 L74,44 M88,24 L102,44"
+            fill="none" stroke="{acc}" stroke-width="1.6" class="tr"/>
+      {''.join(f'<circle cx="{x}" cy="{y}" r="3.5" fill="{acc}" class="nd" style="animation-delay:{d}s"/>'
+               for x, y, d in ((59, 4, 0), (30, 24, .4), (88, 24, .4), (16, 44, .8), (44, 44, .8), (74, 44, .8), (102, 44, .8)))}
+      <circle cx="74" cy="44" r="7" fill="none" stroke="#FACC15" stroke-width="2" class="rw"/>
+      <text x="118" y="10" text-anchor="end" class="vt" fill="#FACC15">reward</text>""",
+                 """
+    .tr { stroke-dasharray: 160; stroke-dashoffset: 160; animation: tr 5s ease-in-out infinite }
+    @keyframes tr { 0% { stroke-dashoffset:160 } 35%,90% { stroke-dashoffset:0 } 100% { stroke-dashoffset:160 } }
+    .nd { transform-box: fill-box; transform-origin: center; animation: nd 5s ease-in-out infinite both }
+    @keyframes nd { 0%,10% { transform: scale(0) } 25%,90% { transform: scale(1) } 100% { transform: scale(0) } }
+    .rw { opacity:0; animation: rw 5s ease-in-out infinite }
+    @keyframes rw { 0%,45% { opacity:0 } 55%,85% { opacity:1 } 100% { opacity:0 } }"""),
+
+        # A barcode with a laser sweeping across it.
+        "warehouse": (f"""
+      {''.join(f'<rect x="{x}" y="4" width="{bw}" height="32" fill="var(--ink)" fill-opacity=".75"/>'
+               for x, bw in ((8, 2), (12, 1), (15, 3), (20, 1), (23, 2), (28, 1), (31, 3), (36, 2), (40, 1), (43, 3),
+                             (48, 1), (51, 2), (55, 3), (60, 1), (63, 2), (67, 1), (70, 3), (75, 2), (79, 1), (82, 3),
+                             (87, 1), (90, 2), (94, 1), (97, 3), (102, 2), (106, 1), (109, 2)))}
+      <text x="59" y="47" text-anchor="middle" class="vt">LOT 24-11 · EXP 2027</text>
+      <rect x="4" y="1" width="2" height="38" fill="{acc}" class="lz"/>""",
+                      """
+    .lz { animation: lz 2.4s ease-in-out infinite alternate }
+    @keyframes lz { from { transform:none } to { transform: translateX(108px) } }"""),
+
+        # An ID card read line by line by OCR, then classified.
+        "cccd": (f"""
+      <rect x="4" y="1" width="110" height="46" rx="5" fill="{acc}" fill-opacity=".07" stroke="{acc}" stroke-opacity=".5"/>
+      <rect x="11" y="9" width="22" height="28" rx="3" fill="{acc}" fill-opacity=".2"/>
+      <circle cx="22" cy="19" r="5" fill="{acc}" fill-opacity=".6"/>
+      <path d="M14,35 Q22,25 30,35" fill="{acc}" fill-opacity=".6"/>
+      {''.join(f'<rect x="40" y="{y}" width="{bw}" height="4" rx="2" fill="var(--ink)" fill-opacity=".55" class="ox" style="animation-delay:{d}s"/>'
+               for y, bw, d in ((10, 50, 0), (19, 64, .3), (28, 40, .6), (37, 56, .9)))}
+      <rect x="4" y="1" width="110" height="2" fill="{acc}" class="sc"/>
+      <text x="114" y="-3" text-anchor="end" class="vt cl" fill="#3FB950">CCCD ✓</text>""",
+                 """
+    .sc { animation: sc 3.6s ease-in-out infinite }
+    @keyframes sc { 0% { transform: translateY(0); opacity:.2 } 45% { transform: translateY(44px); opacity:.9 } 50%,100% { opacity:0; transform: translateY(44px) } }
+    .ox { transform-box: fill-box; transform-origin: left center; animation: ox 3.6s ease-out infinite both }
+    @keyframes ox { 0%,5% { transform: scaleX(0) } 30%,90% { transform: scaleX(1) } 100% { transform: scaleX(0) } }
+    .cl { opacity:0; animation: cl 3.6s ease-out infinite }
+    @keyframes cl { 0%,50% { opacity:0 } 60%,90% { opacity:1 } 100% { opacity:0 } }"""),
+    }
+    markup, css = v[key]
+    css += """
+    .vt { font: 600 7.5px 'JetBrains Mono','Cascadia Code',Consolas,monospace }
+    .vt:not([fill]) { fill: var(--dim) }
+    .pl { transform-box: fill-box; transform-origin: center; animation: pl 2s ease-in-out infinite }
+    @keyframes pl { 0%,100% { transform: scale(1) } 50% { transform: scale(1.6) } }"""
+    return markup, css
+
+
 def project_card(p: Project, n: int) -> str:
     acc, pad, w, h = f"#{KIND_COLORS[p.kicker]}", 18, PROJ_W, PROJ_H
+    vis, vis_css = project_visual(p.key, acc)
     out = [
         f'<rect x="{pad}" y="20" width="36" height="36" rx="9" fill="{acc}"/>',
         f'<text x="{pad + 18}" y="42.5" text-anchor="middle" style="font:800 13px {FONT}" fill="#FFFFFF">{p.mono}</text>',
         f'<text x="{pad + 48}" y="30" style="font:700 8.5px {MONO_FONT};letter-spacing:1.6px" fill="{acc}">{escape(p.kicker)}</text>',
         f'<text x="{pad + 48}" y="50" style="font:700 17px {FONT}" fill="var(--ink)">{escape(p.title)}</text>',
-        f'<circle class="pulse" cx="{w - pad - 4}" cy="26" r="3.5" fill="{acc}"/>',
+        f'<g transform="translate({w - pad - 118},16)">{vis}</g>',
         f'<text x="{pad}" y="78" style="font:600 11.5px {FONT}" fill="var(--dim)">{escape(p.tagline)}</text>',
     ]
 
@@ -1181,7 +1492,7 @@ def project_card(p: Project, n: int) -> str:
     </linearGradient>
     <clipPath id="clip"><rect x="1" y="1" width="{w - 2}" height="{h - 2}" rx="14"/></clipPath>
   </defs>
-  <style>{PALETTE_CSS}
+  <style>{PALETTE_CSS}{vis_css}
     svg {{ --line:#D8DEE4 }}
     @media (prefers-color-scheme: dark) {{ svg {{ --line:#253043 }} }}
     .card {{ animation: card .7s {n * 0.08:.2f}s {EASE} both }}
@@ -1249,6 +1560,7 @@ def main() -> None:
     for n, (key, title, hint) in enumerate(SECTIONS, 1):
         (ASSETS / "sections" / f"{key}.svg").write_text(section_title(n, title, hint), encoding="utf-8")
     (ASSETS / "focus.svg").write_text(focus_cards(), encoding="utf-8")
+    (ASSETS / "asqp.svg").write_text(asqp_demo(), encoding="utf-8")
     print("wrote contact pills, section titles and focus cards")
 
     tech_dir = ASSETS / "tech"

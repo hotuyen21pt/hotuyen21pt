@@ -21,6 +21,16 @@
             --chip:#1A2333; --ac:#36BCF7 }
     }
 
+    .tr { stroke-dasharray: 160; stroke-dashoffset: 160; animation: tr 5s ease-in-out infinite }
+    @keyframes tr { 0% { stroke-dashoffset:160 } 35%,90% { stroke-dashoffset:0 } 100% { stroke-dashoffset:160 } }
+    .nd { transform-box: fill-box; transform-origin: center; animation: nd 5s ease-in-out infinite both }
+    @keyframes nd { 0%,10% { transform: scale(0) } 25%,90% { transform: scale(1) } 100% { transform: scale(0) } }
+    .rw { opacity:0; animation: rw 5s ease-in-out infinite }
+    @keyframes rw { 0%,45% { opacity:0 } 55%,85% { opacity:1 } 100% { opacity:0 } }
+    .vt { font: 600 7.5px 'JetBrains Mono','Cascadia Code',Consolas,monospace }
+    .vt:not([fill]) { fill: var(--dim) }
+    .pl { transform-box: fill-box; transform-origin: center; animation: pl 2s ease-in-out infinite }
+    @keyframes pl { 0%,100% { transform: scale(1) } 50% { transform: scale(1.6) } }
     svg { --line:#D8DEE4 }
     @media (prefers-color-scheme: dark) { svg { --line:#253043 } }
     .card { animation: card .7s 0.40s cubic-bezier(.22,1,.36,1) both }
@@ -48,7 +58,12 @@
     <text x="36" y="42.5" text-anchor="middle" style="font:800 13px 'Segoe UI',Ubuntu,-apple-system,sans-serif" fill="#FFFFFF">S2</text>
     <text x="66" y="30" style="font:700 8.5px 'JetBrains Mono','Cascadia Code',Consolas,monospace;letter-spacing:1.6px" fill="#0EA5E9">PAPER REPRODUCTIONS</text>
     <text x="66" y="50" style="font:700 17px 'Segoe UI',Ubuntu,-apple-system,sans-serif" fill="var(--ink)">S2IT · Tree-CoT-RT</text>
-    <circle class="pulse" cx="378" cy="26" r="3.5" fill="#0EA5E9"/>
+    <g transform="translate(264,16)">
+      <path d="M59,4 L30,24 M59,4 L88,24 M30,24 L16,44 M30,24 L44,44 M88,24 L74,44 M88,24 L102,44"
+            fill="none" stroke="#0EA5E9" stroke-width="1.6" class="tr"/>
+      <circle cx="59" cy="4" r="3.5" fill="#0EA5E9" class="nd" style="animation-delay:0s"/><circle cx="30" cy="24" r="3.5" fill="#0EA5E9" class="nd" style="animation-delay:0.4s"/><circle cx="88" cy="24" r="3.5" fill="#0EA5E9" class="nd" style="animation-delay:0.4s"/><circle cx="16" cy="44" r="3.5" fill="#0EA5E9" class="nd" style="animation-delay:0.8s"/><circle cx="44" cy="44" r="3.5" fill="#0EA5E9" class="nd" style="animation-delay:0.8s"/><circle cx="74" cy="44" r="3.5" fill="#0EA5E9" class="nd" style="animation-delay:0.8s"/><circle cx="102" cy="44" r="3.5" fill="#0EA5E9" class="nd" style="animation-delay:0.8s"/>
+      <circle cx="74" cy="44" r="7" fill="none" stroke="#FACC15" stroke-width="2" class="rw"/>
+      <text x="118" y="10" text-anchor="end" class="vt" fill="#FACC15">reward</text></g>
     <text x="18" y="78" style="font:600 11.5px 'Segoe UI',Ubuntu,-apple-system,sans-serif" fill="var(--dim)">Two ASQP baselines, rebuilt faithfully</text>
     <g class="pop" style="animation-delay:0.35s"><rect x="18.0" y="92" width="116.0" height="54" rx="9" fill="#0EA5E9" fill-opacity=".09" stroke="#0EA5E9" stroke-opacity=".35"/><text x="30.0" y="118" style="font:800 18px 'Segoe UI',Ubuntu,-apple-system,sans-serif" fill="#0EA5E9">NAACL &#x27;25</text><text x="30.0" y="136" style="font:500 9.5px 'Segoe UI',Ubuntu,-apple-system,sans-serif" fill="var(--dim)">S2IT</text></g>
     <g class="pop" style="animation-delay:0.45s"><rect x="142.0" y="92" width="116.0" height="54" rx="9" fill="#0EA5E9" fill-opacity=".09" stroke="#0EA5E9" stroke-opacity=".35"/><text x="154.0" y="118" style="font:800 18px 'Segoe UI',Ubuntu,-apple-system,sans-serif" fill="#0EA5E9">ACL &#x27;26</text><text x="154.0" y="136" style="font:500 9.5px 'Segoe UI',Ubuntu,-apple-system,sans-serif" fill="var(--dim)">Tree-CoT-RT</text></g>
